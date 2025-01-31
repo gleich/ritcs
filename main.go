@@ -2,45 +2,26 @@ package main
 
 import (
 	"os"
-	"path/filepath"
 
-	"golang.org/x/crypto/ssh"
 	"pkg.mattglei.ch/timber"
 )
 
 func main() {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		timber.Fatal(err, "failed to get home directory")
+		timber.Fatal(err, "failed to get user's home directory")
 	}
 
-	keyPath := filepath.Join(home, ".ssh", "id_ed25519")
-	key, err := os.ReadFile(keyPath)
+	conf, err := loadConfig(home)
 	if err != nil {
-		timber.Fatal(err, "failed to read from", keyPath)
+		timber.Fatal(err, "failed to load configuration file")
 	}
 
-	signer, err := ssh.ParsePrivateKey(key)
+	client, session, err := establishConnection(home, conf)
 	if err != nil {
-		timber.Fatal(err, "failed to parse private key")
+		timber.Fatal(err, "failed to establish connection")
 	}
-
-	config := &ssh.ClientConfig{
-		User:            "mwg2345",
-		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	}
-
-	conn, err := ssh.Dial("tcp", "glados.cs.rit.edu:22", config)
-	if err != nil {
-		timber.Fatal(err, "failed to connect to machine")
-	}
-	defer conn.Close()
-
-	session, err := conn.NewSession()
-	if err != nil {
-		timber.Fatal(err, "failed to create new session")
-	}
+	defer client.Close()
 	defer session.Close()
 
 	output, err := session.CombinedOutput("ls -la")
