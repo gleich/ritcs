@@ -36,4 +36,9 @@ func main() {
 	if err != nil {
 		timber.Fatal(err, "failed to run get command")
 	}
+
+	err = copyFilesOver(sftpClient, tempDir)
+	if err != nil {
+		timber.Fatal(err, "failed to copy over files")
+	}
 }
