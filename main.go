@@ -15,6 +15,14 @@ func main() {
 		timber.FatalMsg("please provide arguments to get command")
 	}
 
+	if os.Args[1] == "setup" {
+		err := setup()
+		if err != nil {
+			timber.Fatal(err, "failed to setup user")
+		}
+		return
+	}
+
 	conf, err := loadConfig()
 	if err != nil {
 		timber.Fatal(err, "failed to load configuration file")

@@ -15,7 +15,7 @@ import (
 )
 
 func createTempDir(conf config, client *sftp.Client) (string, error) {
-	dir := filepath.Join(*conf.Home, "ritcsget", strconv.Itoa(rand.Int()))
+	dir := filepath.Join(conf.Home, "ritcsget", strconv.Itoa(rand.Int()))
 
 	err := client.RemoveAll(dir)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -77,7 +77,7 @@ func copyFilesOver(client *sftp.Client, tempDir string) error {
 }
 
 func removeTempDir(client *sftp.Client, tempDir string) error {
-	err := client.RemoveAll(tempDir)
+	err := client.RemoveAll(filepath.Dir(tempDir))
 	if err != nil {
 		return fmt.Errorf("%v failed to remove temporary directory %s", err, tempDir)
 	}
