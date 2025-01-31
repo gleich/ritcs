@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"time"
 
 	"pkg.mattglei.ch/timber"
@@ -9,6 +10,10 @@ import (
 func main() {
 	timber.SetTimezone(time.Local)
 	timber.SetTimeFormat("03:04:05")
+
+	if len(os.Args) <= 1 {
+		timber.FatalMsg("please provide arguments to get command")
+	}
 
 	conf, err := loadConfig()
 	if err != nil {
@@ -22,8 +27,13 @@ func main() {
 	defer sftpClient.Close()
 	defer sshClient.Close()
 
-	_, err = createTempDir(conf, sftpClient)
+	tempDir, err := createTempDir(conf, sftpClient)
 	if err != nil {
 		timber.Fatal(err, "failed to create temporary directory on server")
+	}
+
+	err = runGet(sshClient, tempDir)
+	if err != nil {
+		timber.Fatal(err, "failed to run get command")
 	}
 }
