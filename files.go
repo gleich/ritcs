@@ -75,3 +75,11 @@ func copyFilesOver(client *sftp.Client, tempDir string) error {
 	}
 	return nil
 }
+
+func removeTempDir(client *sftp.Client, tempDir string) error {
+	err := client.RemoveAll(tempDir)
+	if err != nil {
+		return fmt.Errorf("%v failed to remove temporary directory %s", err, tempDir)
+	}
+	return nil
+}

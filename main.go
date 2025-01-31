@@ -41,4 +41,9 @@ func main() {
 	if err != nil {
 		timber.Fatal(err, "failed to copy over files")
 	}
+
+	err = removeTempDir(sftpClient, tempDir)
+	if err != nil {
+		timber.Fatal(err, "Failed to remove temporary directory")
+	}
 }
