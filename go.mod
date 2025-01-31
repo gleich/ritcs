@@ -4,6 +4,7 @@ go 1.23.5
 
 require (
 	github.com/BurntSushi/toml v1.4.0
+	github.com/pkg/sftp v1.13.7
 	golang.org/x/crypto v0.32.0
 	pkg.mattglei.ch/timber v1.0.1
 )
@@ -12,6 +13,7 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/lipgloss v1.0.0 // indirect
 	github.com/charmbracelet/x/ansi v0.7.0 // indirect
+	github.com/kr/fs v0.1.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect

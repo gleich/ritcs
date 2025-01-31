@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 )
 
-func establishConnection(home string, conf config) (*ssh.Client, *ssh.Session, error) {
+func establishConnection(conf config) (*ssh.Client, *sftp.Client, error) {
 	key, err := os.ReadFile(*conf.KeyPath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%v failed to read from key path %s", err, *conf.KeyPath)
@@ -29,10 +30,10 @@ func establishConnection(home string, conf config) (*ssh.Client, *ssh.Session, e
 		return nil, nil, fmt.Errorf("%v failed to create connection", err)
 	}
 
-	session, err := conn.NewSession()
+	sftpClient, err := sftp.NewClient(conn)
 	if err != nil {
-		return nil, nil, fmt.Errorf("%v failed to create new session", err)
+		return nil, nil, fmt.Errorf("%v failed to create sftp client", err)
 	}
 
-	return conn, session, nil
+	return conn, sftpClient, nil
 }
