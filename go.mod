@@ -1,4 +1,4 @@
-module pkg.mattglei.ch/ritcsget
+module pkg.mattglei.ch/ritcs
 
 go 1.23.5
 

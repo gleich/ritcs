@@ -22,7 +22,7 @@ func configPath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("%v failed to get user's home directory", err)
 	}
-	return filepath.Join(home, ".config", "ritcsget", "config.toml"), nil
+	return filepath.Join(home, ".config", "ritcs", "config.toml"), nil
 }
 
 func loadConfig() (config, error) {

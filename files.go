@@ -15,7 +15,7 @@ import (
 )
 
 func createTempDir(conf config, client *sftp.Client) (string, error) {
-	dir := filepath.Join(conf.Home, "ritcsget", strconv.Itoa(rand.Int()))
+	dir := filepath.Join(conf.Home, "ritcs", strconv.Itoa(rand.Int()))
 
 	err := client.RemoveAll(dir)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
