@@ -1,25 +1,35 @@
 package main
 
 import (
-	"os"
 	"time"
 
 	"github.com/alecthomas/kong"
 	"pkg.mattglei.ch/ritcs/internal/cmds"
-	"pkg.mattglei.ch/ritcs/internal/conf"
-	"pkg.mattglei.ch/ritcs/internal/remote"
 	"pkg.mattglei.ch/timber"
 )
 
-var CLI struct {
+var cli struct {
 	Setup struct{} `cmd:"" help:"configure ritcs with an interactive prompt"`
+	Get   struct {
+		Arguments []string `arg:"" help:"arguments to pass to the get command"`
+	} `cmd:"" help:"get files using the \"get\" command"`
 }
 
 func main() {
 	timber.SetTimezone(time.Local)
 	timber.SetTimeFormat("03:04:05")
 
-	ctx := kong.Parse(&CLI)
+	ctx := kong.Parse(
+		&cli,
+		kong.Name("ritcs"),
+		kong.Description("ritcs is a tool to interact with the RIT CS servers"),
+		kong.UsageOnError(),
+		kong.ConfigureHelp(kong.HelpOptions{
+			Compact: true,
+			Summary: true,
+		}),
+	)
+
 	switch ctx.Command() {
 	case "setup":
 		err := cmds.Setup()
@@ -27,42 +37,11 @@ func main() {
 			timber.Fatal(err, "failed to setup user")
 		}
 		return
+	case "get <arguments>":
+		err := cmds.Get(cli.Get.Arguments)
+		if err != nil {
+			timber.Fatal(err, "failed to run get command")
+		}
 	default:
-	}
-
-	if len(os.Args) <= 1 {
-		timber.FatalMsg("please provide arguments to get command")
-	}
-
-	conf, err := conf.Load()
-	if err != nil {
-		timber.Fatal(err, "failed to load configuration file")
-	}
-
-	sshClient, sftpClient, err := remote.EstablishConnection(conf)
-	if err != nil {
-		timber.Fatal(err, "failed to establish connection")
-	}
-	defer sftpClient.Close()
-	defer sshClient.Close()
-
-	tempDir, err := remote.CreateTempDir(conf, sftpClient)
-	if err != nil {
-		timber.Fatal(err, "failed to create temporary directory on server")
-	}
-
-	err = remote.RunGet(sshClient, tempDir)
-	if err != nil {
-		timber.Fatal(err, "failed to run get command")
-	}
-
-	err = remote.CopyFilesFromDir(sftpClient, tempDir)
-	if err != nil {
-		timber.Fatal(err, "failed to copy over files")
-	}
-
-	err = remote.RemoveTempDir(sftpClient, tempDir)
-	if err != nil {
-		timber.Fatal(err, "failed to remove temporary directory")
 	}
 }
