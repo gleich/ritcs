@@ -1,4 +1,4 @@
-package main
+package remote
 
 import (
 	"fmt"
@@ -7,9 +7,10 @@ import (
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
+	"pkg.mattglei.ch/ritcs/internal/conf"
 )
 
-func establishConnection(conf config) (*ssh.Client, *sftp.Client, error) {
+func EstablishConnection(conf conf.Config) (*ssh.Client, *sftp.Client, error) {
 	key, err := os.ReadFile(conf.KeyPath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%v failed to read from key path %s", err, conf.KeyPath)

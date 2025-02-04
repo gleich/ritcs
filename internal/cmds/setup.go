@@ -1,4 +1,4 @@
-package main
+package cmds
 
 import (
 	"fmt"
@@ -7,57 +7,29 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/charmbracelet/huh"
+	"pkg.mattglei.ch/ritcs/internal/conf"
 	"pkg.mattglei.ch/timber"
 )
 
-type config struct {
-	Home    string `toml:"home,required"`
-	Host    string `toml:"host,required"`
-	Port    int    `toml:"port"`
-	KeyPath string `toml:"key_path,required"`
-}
-
-func configPath() (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("%v failed to get user's home directory", err)
-	}
-	return filepath.Join(home, ".config", "ritcs", "config.toml"), nil
-}
-
-func loadConfig() (config, error) {
-	path, err := configPath()
-	if err != nil {
-		return config{}, fmt.Errorf("%v failed to get configuration path", err)
-	}
-
-	var conf config
-	_, err = toml.DecodeFile(path, &conf)
-	if err != nil {
-		return config{}, fmt.Errorf("%v failed to decode TOML config file from %s", err, path)
-	}
-	return conf, nil
-}
-
-func setup() error {
-	conf := config{Port: 22}
+func Setup() error {
+	config := conf.Config{Port: 22}
 
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
 				Title("home").
 				Description("Home directory for your CS user account.").
-				Value(&conf.Home),
+				Value(&config.Home),
 			huh.NewInput().
 				Title("host").
 				Description("Hostname of the CS machine you want to ssh into").
 				Placeholder("glados.cs.rit.edu").
-				Value(&conf.Host),
+				Value(&config.Host),
 			huh.NewInput().
 				Title("key_path").
 				Description("Local path to the private key used to authenticate with the CS machine.").
 				Placeholder(".../id_rsa").
-				Value(&conf.KeyPath).
+				Value(&config.KeyPath).
 				Validate(func(s string) error {
 					_, err := os.Stat(s)
 					if err != nil {
@@ -73,12 +45,12 @@ func setup() error {
 		return fmt.Errorf("%v failed to ask user for configuration", err)
 	}
 
-	b, err := toml.Marshal(conf)
+	b, err := toml.Marshal(config)
 	if err != nil {
 		return fmt.Errorf("%v failed to marshal config into toml", err)
 	}
 
-	path, err := configPath()
+	path, err := conf.Path()
 	if err != nil {
 		return fmt.Errorf("%v failed to get configuration path", err)
 	}

@@ -1,4 +1,4 @@
-package main
+package remote
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func runGet(client *ssh.Client, tempDir string) error {
+func RunGet(client *ssh.Client, dir string) error {
 	session, err := client.NewSession()
 	if err != nil {
 		return fmt.Errorf("%v failed to create new ssh session", err)
@@ -16,7 +16,7 @@ func runGet(client *ssh.Client, tempDir string) error {
 	defer session.Close()
 
 	cmd := fmt.Sprintf("get %s", strings.Join(os.Args[1:], " "))
-	out, err := session.CombinedOutput(fmt.Sprintf("cd %s && %s", tempDir, cmd))
+	out, err := session.CombinedOutput(fmt.Sprintf("cd %s && %s", dir, cmd))
 	if err != nil {
 		return fmt.Errorf("%v failed to run %s with an output of\n%s", err, cmd, out)
 	}
