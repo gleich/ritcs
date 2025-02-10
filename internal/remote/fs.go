@@ -10,12 +10,13 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/pkg/sftp"
 	"pkg.mattglei.ch/ritcs/internal/conf"
 	"pkg.mattglei.ch/timber"
 )
 
-func CopyFilesFromHost(client *sftp.Client, tempDir string) error {
+func CopyFilesFromHost(client *sftp.Client, ignoreStatements []string, tempDir string) error {
 	var files, folders int
 
 	cwd, err := os.Getwd()
@@ -37,6 +38,20 @@ func CopyFilesFromHost(client *sftp.Client, tempDir string) error {
 		relPath, err := filepath.Rel(cwd, localPath)
 		if err != nil {
 			return fmt.Errorf("%v failed to get relative path for %s", err, localPath)
+		}
+		ignore := false
+		for _, statement := range ignoreStatements {
+			match, err := doublestar.Match(statement, relPath)
+			if err != nil {
+				return fmt.Errorf("%v failed to check match with %s", err, statement)
+			}
+			if match {
+				ignore = true
+				break
+			}
+		}
+		if ignore {
+			return nil
 		}
 		remotePath := filepath.Join(tempDir, relPath)
 

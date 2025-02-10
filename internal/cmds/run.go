@@ -10,24 +10,29 @@ import (
 )
 
 func Run(cmd []string) error {
-	conf, err := conf.Load()
+	config, err := conf.Load()
 	if err != nil {
 		timber.Fatal(err, "failed to load configuration file")
 	}
 
-	sshClient, sftpClient, err := remote.EstablishConnection(conf)
+	ignoreStatements, err := conf.ReadIgnore()
+	if err != nil {
+		timber.Fatal(err, "failed to read ignore file")
+	}
+
+	sshClient, sftpClient, err := remote.EstablishConnection(config)
 	if err != nil {
 		timber.Fatal(err, "failed to establish connection")
 	}
 	defer sftpClient.Close()
 	defer sshClient.Close()
 
-	tempDir, err := remote.CreateTempDir(conf, sftpClient)
+	tempDir, err := remote.CreateTempDir(config, sftpClient)
 	if err != nil {
 		timber.Fatal(err, "failed to create temporary directory on server")
 	}
 
-	err = remote.CopyFilesFromHost(sftpClient, tempDir)
+	err = remote.CopyFilesFromHost(sftpClient, ignoreStatements, tempDir)
 	if err != nil {
 		timber.Fatal(err, "failed to copy files from host")
 	}
