@@ -1,0 +1,31 @@
+release:
+  github:
+    owner: gleich
+    name: 'ritcs'
+  prerelease: auto
+before:
+  hooks:
+    - go mod download
+builds:
+  - goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+brews:
+  - tap:
+      owner: gleich
+      name: homebrew-tap
+    folder: Formula
+    homepage: 'https://github.com/gleich/fgh'
+    description: 'Quickly run terminal commands on the RIT CS machines'
+    commit_author:
+      name: gleich
+      email: git@mattglei.ch
+    install: bin.install "ritcs"
