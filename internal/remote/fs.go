@@ -81,10 +81,17 @@ func CopyFilesFromHost(client *sftp.Client, tempDir string) error {
 			timber.Done("uploaded", relPath)
 			files++
 		}
+
+		perm := info.Mode().Perm()
+		err = client.Chmod(remotePath, perm)
+		if err != nil {
+			return fmt.Errorf("%v failed to set mode of %s for %s", err, perm, remotePath)
+		}
+
 		return nil
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("%v failed to walk local directory", err)
 	}
 	return nil
 }
@@ -131,8 +138,15 @@ func CopyFilesFromRemote(client *sftp.Client, tempDir string) error {
 			if err != nil {
 				return fmt.Errorf("%v failed to copy remote file", err)
 			}
+
 			timber.Done("downloaded", relPath)
 			files++
+		}
+
+		perm := walker.Stat().Mode().Perm()
+		err = os.Chmod(localPath, perm)
+		if err != nil {
+			return fmt.Errorf("%v failed to set %s for %s", err, perm, localPath)
 		}
 	}
 	return nil
