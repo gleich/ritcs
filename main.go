@@ -8,16 +8,17 @@ import (
 	"pkg.mattglei.ch/timber"
 )
 
-var cli struct {
-	Setup struct{} `cmd:"" help:"configure ritcs with an interactive prompt"`
-	Get   struct {
-		Arguments []string `arg:"" help:"arguments to pass to the get command"`
-	} `cmd:"" help:"get files using the \"get\" command"`
-}
-
 func main() {
 	timber.SetTimezone(time.Local)
 	timber.SetTimeFormat("03:04:05")
+
+	cli := struct {
+		Setup struct{} `cmd:"" help:"configure ritcs with an interactive prompt"`
+		Run   struct {
+			Arguments []string `arg:"" help:"arguments to pass into the given command"`
+			NoCopy    bool     `help:"do not copy the files from the output directory to the current directory"`
+		} `cmd:"" help:"run a command on the RIT CS servers"`
+	}{}
 
 	ctx := kong.Parse(
 		&cli,
@@ -37,11 +38,10 @@ func main() {
 			timber.Fatal(err, "failed to setup user")
 		}
 		return
-	case "get <arguments>":
-		err := cmds.Get(cli.Get.Arguments)
+	case "run <arguments>":
+		err := cmds.Run(cli.Run.Arguments)
 		if err != nil {
-			timber.Fatal(err, "failed to run get command")
+			timber.Fatal(err, "failed to run \"run\" command")
 		}
-	default:
 	}
 }

@@ -1,12 +1,14 @@
 package cmds
 
 import (
+	"fmt"
+
 	"pkg.mattglei.ch/ritcs/internal/conf"
 	"pkg.mattglei.ch/ritcs/internal/remote"
 	"pkg.mattglei.ch/timber"
 )
 
-func Get(args []string) error {
+func Run(cmd []string) error {
 	conf, err := conf.Load()
 	if err != nil {
 		timber.Fatal(err, "failed to load configuration file")
@@ -24,14 +26,20 @@ func Get(args []string) error {
 		timber.Fatal(err, "failed to create temporary directory on server")
 	}
 
-	err = remote.RunGet(sshClient, tempDir, args)
+	err = remote.CopyFilesFromHost(sftpClient, tempDir)
+	if err != nil {
+		timber.Fatal(err, "failed to copy files from host")
+	}
+
+	err = remote.RunCmd(sshClient, tempDir, cmd)
 	if err != nil {
 		timber.Fatal(err, "failed to run get command")
 	}
 
-	err = remote.CopyFilesFromDir(sftpClient, tempDir)
+	fmt.Println()
+	err = remote.CopyFilesFromRemote(sftpClient, tempDir)
 	if err != nil {
-		timber.Fatal(err, "failed to copy over files")
+		timber.Fatal(err, "failed to copy files from remote")
 	}
 
 	err = remote.RemoveTempDir(sftpClient, tempDir)

@@ -15,15 +15,90 @@ import (
 	"pkg.mattglei.ch/timber"
 )
 
-func CopyFilesFromDir(client *sftp.Client, dir string) error {
-	walker := client.Walk(dir)
+func CopyFilesFromHost(client *sftp.Client, tempDir string) error {
+	var files, folders int
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("%v failed to get working directory", err)
+	}
+
+	outputNewline := false
+	err = filepath.Walk(cwd, func(localPath string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// skipping symlinks
+		if info.Mode()&os.ModeSymlink != 0 {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(cwd, localPath)
+		if err != nil {
+			return fmt.Errorf("%v failed to get relative path for %s", err, localPath)
+		}
+		remotePath := filepath.Join(tempDir, relPath)
+
+		if info.IsDir() {
+			if err := client.MkdirAll(remotePath); err != nil {
+				return fmt.Errorf("%v failed to create remote directory %s", err, remotePath)
+			}
+			folders++
+		} else {
+			localFile, err := os.Open(localPath)
+			if err != nil {
+				return fmt.Errorf("%v failed to open local file %s", err, localPath)
+			}
+
+			remoteDir := filepath.Dir(remotePath)
+			if err := client.MkdirAll(remoteDir); err != nil {
+				return fmt.Errorf("%v failed to create remote directory %s", err, remoteDir)
+			}
+
+			remoteFile, err := client.Create(remotePath)
+			if err != nil {
+				return fmt.Errorf("%v failed to create remote file %s", err, remotePath)
+			}
+
+			if _, err := io.Copy(remoteFile, localFile); err != nil {
+				return fmt.Errorf("%v failed to copy local file %s to remote", err, localPath)
+			}
+
+			err = localFile.Close()
+			if err != nil {
+				return fmt.Errorf("%v failed to close local file", err)
+			}
+			err = remoteFile.Close()
+			if err != nil {
+				return fmt.Errorf("%v failed to close remote file", err)
+			}
+
+			if !outputNewline {
+				fmt.Println()
+				outputNewline = true
+			}
+			timber.Done("uploaded", relPath)
+			files++
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func CopyFilesFromRemote(client *sftp.Client, tempDir string) error {
+	walker := client.Walk(tempDir)
+	var files, folders int
 	for walker.Step() {
 		if err := walker.Err(); err != nil {
 			return err
 		}
 
 		remotePath := walker.Path()
-		relPath, err := filepath.Rel(dir, remotePath)
+		relPath, err := filepath.Rel(tempDir, remotePath)
 		if err != nil {
 			return fmt.Errorf("%v failed to get relative path", err)
 		}
@@ -34,6 +109,7 @@ func CopyFilesFromDir(client *sftp.Client, dir string) error {
 			if err != nil {
 				return fmt.Errorf("%v failed to create local directory %s", err, localPath)
 			}
+			folders++
 		} else {
 			remoteFile, err := client.Open(remotePath)
 			if err != nil {
@@ -55,7 +131,8 @@ func CopyFilesFromDir(client *sftp.Client, dir string) error {
 			if err != nil {
 				return fmt.Errorf("%v failed to copy remote file", err)
 			}
-			timber.Done("copied over", localPath)
+			timber.Done("downloaded", relPath)
+			files++
 		}
 	}
 	return nil
