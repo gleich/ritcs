@@ -32,13 +32,17 @@ func EstablishConnection(conf conf.Config) (*ssh.Client, *sftp.Client, error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("%v failed to create connection", err)
 	}
-	timber.Done("established SSH connection to", conf.Host)
+	if !conf.Silent {
+		timber.Done("established SSH connection to", conf.Host)
+	}
 
 	sftpClient, err := sftp.NewClient(conn)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%v failed to create sftp client", err)
 	}
-	timber.Done("established SFTP connection to", conf.Host)
+	if !conf.Silent {
+		timber.Done("established SFTP connection to", conf.Host)
+	}
 
 	return conn, sftpClient, nil
 }

@@ -15,7 +15,7 @@ func Run(cmd []string) error {
 		timber.Fatal(err, "failed to load configuration file")
 	}
 
-	ignoreStatements, err := conf.ReadIgnore()
+	ignoreStatements, err := conf.ReadIgnore(config)
 	if err != nil {
 		timber.Fatal(err, "failed to read ignore file")
 	}
@@ -32,17 +32,23 @@ func Run(cmd []string) error {
 		timber.Fatal(err, "failed to create temporary directory on server")
 	}
 
-	err = remote.CopyFilesFromHost(sftpClient, ignoreStatements, tempDir)
-	if err != nil {
-		timber.Fatal(err, "failed to copy files from host")
+	if !config.SkipUpload {
+		err = remote.Upload(sftpClient, config, ignoreStatements, tempDir)
+		if err != nil {
+			timber.Fatal(err, "failed to copy files from host")
+		}
 	}
 
 	cmdErr := remote.RunCmd(sshClient, tempDir, cmd)
 
-	fmt.Println()
-	err = remote.CopyFilesFromRemote(sftpClient, tempDir)
-	if err != nil {
-		timber.Fatal(err, "failed to copy files from remote")
+	if !config.Silent {
+		fmt.Println()
+	}
+	if !config.SkipDownload {
+		err = remote.Download(sftpClient, config, tempDir)
+		if err != nil {
+			timber.Fatal(err, "failed to copy files from remote")
+		}
 	}
 
 	err = remote.RemoveTempDir(sftpClient, tempDir)

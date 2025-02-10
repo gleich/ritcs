@@ -16,7 +16,12 @@ import (
 	"pkg.mattglei.ch/timber"
 )
 
-func CopyFilesFromHost(client *sftp.Client, ignoreStatements []string, tempDir string) error {
+func Upload(
+	client *sftp.Client,
+	config conf.Config,
+	ignoreStatements []string,
+	tempDir string,
+) error {
 	var files, folders int
 
 	cwd, err := os.Getwd()
@@ -94,7 +99,9 @@ func CopyFilesFromHost(client *sftp.Client, ignoreStatements []string, tempDir s
 				timber.Info("uploading local files")
 				outputNewline = true
 			}
-			timber.Done("uploaded", relPath)
+			if !config.Silent {
+				timber.Done("uploaded", relPath)
+			}
 			files++
 		}
 
@@ -112,10 +119,16 @@ func CopyFilesFromHost(client *sftp.Client, ignoreStatements []string, tempDir s
 	return nil
 }
 
-func CopyFilesFromRemote(client *sftp.Client, tempDir string) error {
+func Download(client *sftp.Client, config conf.Config, tempDir string) error {
 	walker := client.Walk(tempDir)
 	var files, folders int
 	outputtedInfo := false
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("%v failed to get working directory", err)
+	}
+
 	for walker.Step() {
 		if err := walker.Err(); err != nil {
 			return err
@@ -126,7 +139,7 @@ func CopyFilesFromRemote(client *sftp.Client, tempDir string) error {
 		if err != nil {
 			return fmt.Errorf("%v failed to get relative path", err)
 		}
-		localPath := filepath.Join("./", relPath)
+		localPath := filepath.Join(cwd, relPath)
 
 		if walker.Stat().IsDir() {
 			err := os.MkdirAll(localPath, os.ModePerm)
@@ -156,11 +169,13 @@ func CopyFilesFromRemote(client *sftp.Client, tempDir string) error {
 				return fmt.Errorf("%v failed to copy remote file", err)
 			}
 
-			if !outputtedInfo {
+			if !outputtedInfo && !config.Silent {
 				timber.Info("downloading files from remote")
 				outputtedInfo = true
 			}
-			timber.Done("downloaded", relPath)
+			if !config.Silent {
+				timber.Done("downloaded", relPath)
+			}
 			files++
 		}
 

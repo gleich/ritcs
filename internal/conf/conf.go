@@ -9,10 +9,13 @@ import (
 )
 
 type Config struct {
-	Home    string `toml:"home,required"`
-	Host    string `toml:"host,required"`
-	Port    int    `toml:"port"`
-	KeyPath string `toml:"key_path,required"`
+	Home         string `toml:"home,required"`
+	Host         string `toml:"host,required"`
+	KeyPath      string `toml:"key_path,required"`
+	Port         int    `toml:"port"`
+	SkipUpload   bool   `toml:"skip_upload"`
+	SkipDownload bool   `toml:"skip_download"`
+	Silent       bool   `toml:"silent"`
 }
 
 func Path() (string, error) {
@@ -34,5 +37,6 @@ func Load() (Config, error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("%v failed to decode TOML config file from %s", err, path)
 	}
+
 	return conf, nil
 }
