@@ -19,10 +19,10 @@ builds:
       - 6
       - 7
 brews:
-  - tap:
+  - repository:
       owner: gleich
       name: homebrew-tap
-    folder: Formula
+    directory: Formula
     homepage: 'https://github.com/gleich/fgh'
     description: 'Quickly run terminal commands on the RIT CS machines'
     commit_author:
