@@ -12,7 +12,6 @@ import (
 )
 
 func EstablishConnection(conf conf.Config) (*ssh.Client, *sftp.Client, error) {
-
 	key, err := os.ReadFile(conf.KeyPath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%v failed to read from key path %s", err, conf.KeyPath)
