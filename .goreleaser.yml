@@ -23,7 +23,7 @@ brews:
       owner: gleich
       name: homebrew-tap
     directory: Formula
-    homepage: 'https://github.com/gleich/fgh'
+    homepage: 'https://github.com/gleich/ritcs'
     description: 'Quickly run terminal commands on the RIT CS machines'
     commit_author:
       name: gleich
