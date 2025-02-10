@@ -7,6 +7,7 @@ require (
 	github.com/charmbracelet/huh v0.6.0
 	github.com/pkg/sftp v1.13.7
 	golang.org/x/crypto v0.33.0
+	golang.org/x/term v0.29.0
 	pkg.mattglei.ch/timber v1.1.0
 )
 

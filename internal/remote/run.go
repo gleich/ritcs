@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/term"
 	"pkg.mattglei.ch/timber"
 )
 
@@ -17,12 +18,17 @@ func RunCmd(client *ssh.Client, dir string, cmd []string) error {
 	}
 	defer session.Close()
 
+	width, height, err := term.GetSize(0)
+	if err != nil {
+		return fmt.Errorf("%v failed to get terminal size", err)
+	}
+
 	modes := ssh.TerminalModes{
 		ssh.ECHO:          1,
 		ssh.TTY_OP_ISPEED: 14_400,
 		ssh.TTY_OP_OSPEED: 14_400,
 	}
-	err = session.RequestPty("xterm-256color", 80, 40, modes)
+	err = session.RequestPty("xterm-256color", height, width, modes)
 	if err != nil {
 		return fmt.Errorf("%v request for pseudo terminal failed", err)
 	}
