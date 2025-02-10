@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"fmt"
+	"strings"
 
 	"pkg.mattglei.ch/ritcs/internal/conf"
 	"pkg.mattglei.ch/ritcs/internal/remote"
@@ -31,10 +32,7 @@ func Run(cmd []string) error {
 		timber.Fatal(err, "failed to copy files from host")
 	}
 
-	err = remote.RunCmd(sshClient, tempDir, cmd)
-	if err != nil {
-		timber.Fatal(err, "failed to run get command")
-	}
+	cmdErr := remote.RunCmd(sshClient, tempDir, cmd)
 
 	fmt.Println()
 	err = remote.CopyFilesFromRemote(sftpClient, tempDir)
@@ -45,6 +43,11 @@ func Run(cmd []string) error {
 	err = remote.RemoveTempDir(sftpClient, tempDir)
 	if err != nil {
 		timber.Fatal(err, "failed to remove temporary directory")
+	}
+
+	if cmdErr != nil {
+		fmt.Println()
+		timber.Fatal(err, strings.Join(cmd, " "), "excited with a fail exit code")
 	}
 	return nil
 }
