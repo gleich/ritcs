@@ -76,6 +76,7 @@ func CopyFilesFromHost(client *sftp.Client, tempDir string) error {
 
 			if !outputNewline {
 				fmt.Println()
+				timber.Info("uploading local files")
 				outputNewline = true
 			}
 			timber.Done("uploaded", relPath)
@@ -99,6 +100,7 @@ func CopyFilesFromHost(client *sftp.Client, tempDir string) error {
 func CopyFilesFromRemote(client *sftp.Client, tempDir string) error {
 	walker := client.Walk(tempDir)
 	var files, folders int
+	outputtedInfo := false
 	for walker.Step() {
 		if err := walker.Err(); err != nil {
 			return err
@@ -139,6 +141,10 @@ func CopyFilesFromRemote(client *sftp.Client, tempDir string) error {
 				return fmt.Errorf("%v failed to copy remote file", err)
 			}
 
+			if !outputtedInfo {
+				timber.Info("downloading files from remote")
+				outputtedInfo = true
+			}
 			timber.Done("downloaded", relPath)
 			files++
 		}

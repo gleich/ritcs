@@ -47,7 +47,7 @@ func Run(cmd []string) error {
 
 	if cmdErr != nil {
 		fmt.Println()
-		timber.Fatal(err, strings.Join(cmd, " "), "excited with a fail exit code")
+		timber.Fatal(cmdErr, strings.Join(cmd, " "), "excited with a fail exit code")
 	}
 	return nil
 }
