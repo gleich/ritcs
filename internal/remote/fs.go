@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 
 	"github.com/pkg/sftp"
 	"pkg.mattglei.ch/ritcs/internal/conf"
@@ -37,6 +38,16 @@ func CopyTarball(client *sftp.Client, tempdir string, tarpath string) error {
 	return nil
 }
 
+func RemoveTarball(client *sftp.Client, tarpath string, wg *sync.WaitGroup) error {
+	wg.Add(1)
+	err := client.Remove(tarpath)
+	if err != nil {
+		return fmt.Errorf("%v failed to remove %s", err, tarpath)
+	}
+	wg.Done()
+	return nil
+}
+
 func CreateTempDir(client *sftp.Client) (string, error) {
 	dir := filepath.Join(conf.Config.Home, "ritcs", strconv.Itoa(rand.Int()))
 
@@ -53,10 +64,10 @@ func CreateTempDir(client *sftp.Client) (string, error) {
 	return dir, nil
 }
 
-func RemoveTempDir(client *sftp.Client, dir string) error {
-	err := client.RemoveAll(filepath.Dir(dir))
+func RemoveTempDir(client *sftp.Client, tempdir string) error {
+	err := client.RemoveAll(filepath.Dir(tempdir))
 	if err != nil {
-		return fmt.Errorf("%v failed to remove temporary directory %s", err, dir)
+		return fmt.Errorf("%v failed to remove temporary directory %s", err, tempdir)
 	}
 	return nil
 }

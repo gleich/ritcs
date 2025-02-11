@@ -44,6 +44,8 @@ func CreateTarball(ignoreStatements []string) (string, error) {
 		return "", fmt.Errorf("%v failed to get working directory", err)
 	}
 
+	outputtedNewline := false
+
 	err = filepath.Walk(cwd, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -79,10 +81,6 @@ func CreateTarball(ignoreStatements []string) (string, error) {
 			return fmt.Errorf("%v failed to write header", err)
 		}
 
-		if !conf.Config.Silent {
-			timber.Done("compressed", relPath)
-		}
-
 		if info.Mode().IsRegular() {
 			file, err := os.Open(path)
 			if err != nil {
@@ -92,6 +90,14 @@ func CreateTarball(ignoreStatements []string) (string, error) {
 			_, err = io.Copy(tw, file)
 			if err != nil {
 				return fmt.Errorf("%v failed to copy %s into tar writer", err, path)
+			}
+
+			if !conf.Config.Silent {
+				if !outputtedNewline {
+					fmt.Println()
+					outputtedNewline = true
+				}
+				timber.Done("uploaded", relPath)
 			}
 		}
 

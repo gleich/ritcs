@@ -3,6 +3,7 @@ package remote
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -50,6 +51,21 @@ func RunCmd(client *ssh.Client, dir string, cmd []string) error {
 	}
 	if !conf.Config.Silent {
 		timber.Done(fmt.Sprintf("finished running in %s", time.Since(start)))
+	}
+	return nil
+}
+
+func RunTar(client *ssh.Client, tempdir, tarpath string, extract bool) error {
+	session, err := client.NewSession()
+	if err != nil {
+		return fmt.Errorf("%v failed to create new ssh session", err)
+	}
+	defer session.Close()
+
+	command := strings.Join([]string{"tar", "-xzvf", filepath.Base(tarpath)}, " ")
+	out, err := session.CombinedOutput(fmt.Sprintf("cd %s && %s", tempdir, command))
+	if err != nil {
+		return fmt.Errorf("%v failed to run %s: %s", err, command, string(out))
 	}
 	return nil
 }

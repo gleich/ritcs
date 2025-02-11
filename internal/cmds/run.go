@@ -2,8 +2,8 @@ package cmds
 
 import (
 	"fmt"
-	"os"
 	"strings"
+	"sync"
 
 	"pkg.mattglei.ch/ritcs/internal/conf"
 	"pkg.mattglei.ch/ritcs/internal/host"
@@ -34,20 +34,30 @@ func Run(cmd []string) error {
 		timber.Fatal(err, "failed to create temporary directory on server")
 	}
 
+	wg := sync.WaitGroup{}
 	if !conf.Config.SkipUpload {
 		tarpath, err := host.CreateTarball(ignoreStatements)
 		if err != nil {
 			timber.Fatal(err, "failed to create tarball")
 		}
-
 		err = remote.CopyTarball(sftpClient, tempdir, tarpath)
 		if err != nil {
 			timber.Fatal(err, "failed to copy tarball to remote machine")
 		}
-		os.Exit(0)
+		err = remote.RunTar(sshClient, tempdir, tarpath, true)
+		if err != nil {
+			return fmt.Errorf("%v failed to extract tar file", err)
+		}
+		go func() {
+			err := remote.RemoveTarball(sftpClient, tarpath, &wg)
+			if err != nil {
+				timber.Error(err, "failed to remove", tarpath, "from remote")
+			}
+		}()
 	}
 
 	cmdErr := remote.RunCmd(sshClient, tempdir, cmd)
+	wg.Wait()
 
 	if !conf.Config.Silent {
 		fmt.Println()
