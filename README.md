@@ -1,5 +1,10 @@
 # ritcs
 
+[![build](https://github.com/gleich/ritcs/actions/workflows/build.yml/badge.svg)](https://github.com/gleich/ritcs/actions/workflows/build.yml)
+[![release](https://github.com/gleich/ritcs/actions/workflows/release.yml/badge.svg)](https://github.com/gleich/ritcs/actions/workflows/release.yml)
+[![lint](https://github.com/gleich/ritcs/actions/workflows/lint.yml/badge.svg)](https://github.com/gleich/ritcs/actions/workflows/lint.yml)
+[![report card](https://goreportcard.com/badge/pkg.mattglei.ch/ritcs)](https://goreportcard.com/report/pkg.mattglei.ch/ritcs)
+
 Quickly run terminal commands on [RIT](https://www.rit.edu/) CS machines.
 
 ## Demo
