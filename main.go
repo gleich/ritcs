@@ -49,6 +49,9 @@ func main() {
 	if os.Args[1] == "--skip-download" {
 		conf.Config.SkipDownload = true
 		args = os.Args[2:]
+	} else if os.Args[1] == "--silent" {
+		conf.Config.Silent = true
+		args = os.Args[2:]
 	}
 
 	err = cmds.Run(args)

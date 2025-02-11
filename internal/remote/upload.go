@@ -8,12 +8,10 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/pkg/sftp"
 	"pkg.mattglei.ch/ritcs/internal/conf"
-	"pkg.mattglei.ch/ritcs/internal/util"
 	"pkg.mattglei.ch/timber"
 )
 
@@ -22,7 +20,6 @@ func UploadCWD(
 	ignoreStatements []string,
 	remoteTarPath string,
 ) (int, error) {
-	start := time.Now()
 	cwd, err := os.Getwd()
 	if err != nil {
 		return 0, fmt.Errorf("%v failed to get working directory", err)
@@ -109,16 +106,13 @@ func UploadCWD(
 
 			if !conf.Config.Silent {
 				timber.Done("uploaded", relPath)
-				filesUploaded++
 			}
+			filesUploaded++
 		}
 		return nil
 	})
 	if err != nil {
 		return 0, fmt.Errorf("%v failed to walk directory %s", err, cwd)
-	}
-	if !conf.Config.Silent {
-		timber.Done("uploaded", filesUploaded, "files in", util.FormatDuration(time.Since(start)))
 	}
 	return filesUploaded, nil
 }
