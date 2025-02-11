@@ -2,9 +2,11 @@ package cmds
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"pkg.mattglei.ch/ritcs/internal/conf"
+	"pkg.mattglei.ch/ritcs/internal/local"
 	"pkg.mattglei.ch/ritcs/internal/remote"
 	"pkg.mattglei.ch/timber"
 )
@@ -33,10 +35,12 @@ func Run(cmd []string) error {
 	}
 
 	if !config.SkipUpload {
-		err = remote.Upload(sftpClient, config, ignoreStatements, tempDir)
+		zipPath, err := local.CreateTarball(config, ignoreStatements)
 		if err != nil {
-			timber.Fatal(err, "failed to copy files from host")
+			timber.Fatal(err, "failed to create tarball")
 		}
+		timber.Debug(zipPath)
+		os.Exit(0)
 	}
 
 	cmdErr := remote.RunCmd(sshClient, config, tempDir, cmd)
@@ -45,10 +49,10 @@ func Run(cmd []string) error {
 		fmt.Println()
 	}
 	if !config.SkipDownload {
-		err = remote.Download(sftpClient, config, tempDir)
-		if err != nil {
-			timber.Fatal(err, "failed to copy files from remote")
-		}
+		// err = remote.Download(sftpClient, config, tempDir)
+		// if err != nil {
+		// 	timber.Fatal(err, "failed to copy files from remote")
+		// }
 	}
 
 	err = remote.RemoveTempDir(sftpClient, tempDir)
