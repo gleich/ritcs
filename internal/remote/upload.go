@@ -1,4 +1,4 @@
-package host
+package remote
 
 import (
 	"archive/tar"
@@ -6,34 +6,36 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"math/rand"
 	"os"
 	"path/filepath"
-	"strconv"
+	"time"
 
 	"github.com/bmatcuk/doublestar/v4"
+	"github.com/pkg/sftp"
 	"pkg.mattglei.ch/ritcs/internal/conf"
+	"pkg.mattglei.ch/ritcs/internal/util"
 	"pkg.mattglei.ch/timber"
 )
 
-func CreateTarball(ignoreStatements []string) (string, error) {
-	outPath := filepath.Join(
-		os.TempDir(),
-		"ritcs",
-		fmt.Sprintf("%s.tar.gz", strconv.Itoa(rand.Int())),
-	)
-	err := os.MkdirAll(filepath.Dir(outPath), os.ModePerm)
-	if err != nil {
-		return "", fmt.Errorf("%v failed to create parent directory for %s", err, outPath)
+func UploadCWD(
+	sftpClient *sftp.Client,
+	ignoreStatements []string,
+	remoteTarPath string,
+) error {
+	start := time.Now()
+	if !conf.Config.Silent {
+		fmt.Println()
+		timber.Info("uploading files")
 	}
-	outFile, err := os.Create(outPath)
+
+	remoteFile, err := sftpClient.Create(remoteTarPath)
 	if err != nil {
-		return "", fmt.Errorf("%v failed to create tar file at %s", err, outPath)
+		return fmt.Errorf("%v failed to create remote file at %s", err, remoteTarPath)
 	}
-	defer outFile.Close()
+	defer remoteFile.Close()
 
 	var (
-		gw = gzip.NewWriter(outFile)
+		gw = gzip.NewWriter(remoteFile)
 		tw = tar.NewWriter(gw)
 	)
 	defer gw.Close()
@@ -41,11 +43,10 @@ func CreateTarball(ignoreStatements []string) (string, error) {
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		return "", fmt.Errorf("%v failed to get working directory", err)
+		return fmt.Errorf("%v failed to get working directory", err)
 	}
 
-	outputtedNewline := false
-
+	filesUploaded := 0
 	err = filepath.Walk(cwd, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -60,7 +61,12 @@ func CreateTarball(ignoreStatements []string) (string, error) {
 		for _, statement := range ignoreStatements {
 			match, err := doublestar.Match(statement, relPath)
 			if err != nil {
-				return fmt.Errorf("%v failed to check match with %s for %s", err, statement, path)
+				return fmt.Errorf(
+					"%v failed to check match with %s for %s",
+					err,
+					statement,
+					relPath,
+				)
 			}
 			if match {
 				ignore = true
@@ -73,7 +79,7 @@ func CreateTarball(ignoreStatements []string) (string, error) {
 
 		header, err := tar.FileInfoHeader(info, "")
 		if err != nil {
-			return fmt.Errorf("%v could not obtain tar header for %s", err, path)
+			return fmt.Errorf("%v failed to create tar header", err)
 		}
 		header.Name = filepath.ToSlash(relPath)
 		err = tw.WriteHeader(header)
@@ -87,25 +93,24 @@ func CreateTarball(ignoreStatements []string) (string, error) {
 				return fmt.Errorf("%v failed to open %s", err, path)
 			}
 			defer file.Close()
+
 			_, err = io.Copy(tw, file)
 			if err != nil {
-				return fmt.Errorf("%v failed to copy %s into tar writer", err, path)
+				return fmt.Errorf("%v failed to copy %s to tar writer", err, path)
 			}
 
 			if !conf.Config.Silent {
-				if !outputtedNewline {
-					fmt.Println()
-					outputtedNewline = true
-				}
 				timber.Done("uploaded", relPath)
+				filesUploaded++
 			}
 		}
-
 		return nil
 	})
 	if err != nil {
-		return "", fmt.Errorf("%v failed to walk directory", err)
+		return fmt.Errorf("%v failed to walk directory %s", err, cwd)
 	}
-
-	return outPath, nil
+	if !conf.Config.Silent {
+		timber.Done("uploaded", filesUploaded, "files in", util.FormatDuration(time.Since(start)))
+	}
+	return nil
 }

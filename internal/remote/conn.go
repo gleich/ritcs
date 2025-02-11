@@ -28,7 +28,11 @@ func EstablishConnection() (*ssh.Client, *sftp.Client, error) {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", conf.Config.Host, conf.Config.Port), config)
+	sshClient, err := ssh.Dial(
+		"tcp",
+		fmt.Sprintf("%s:%d", conf.Config.Host, conf.Config.Port),
+		config,
+	)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%v failed to create connection", err)
 	}
@@ -36,7 +40,7 @@ func EstablishConnection() (*ssh.Client, *sftp.Client, error) {
 		timber.Done("established SSH connection to", conf.Config.Host)
 	}
 
-	sftpClient, err := sftp.NewClient(conn)
+	sftpClient, err := sftp.NewClient(sshClient)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%v failed to create sftp client", err)
 	}
@@ -44,5 +48,5 @@ func EstablishConnection() (*ssh.Client, *sftp.Client, error) {
 		timber.Done("established SFTP connection to", conf.Config.Host)
 	}
 
-	return conn, sftpClient, nil
+	return sshClient, sftpClient, nil
 }

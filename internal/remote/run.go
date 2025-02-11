@@ -3,18 +3,25 @@ package remote
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/term"
 	"pkg.mattglei.ch/ritcs/internal/conf"
+	"pkg.mattglei.ch/ritcs/internal/util"
 	"pkg.mattglei.ch/timber"
 )
 
-func RunCmd(client *ssh.Client, dir string, cmd []string) error {
-	session, err := client.NewSession()
+func RunCmd(sshClient *ssh.Client, dir string, cmd []string) error {
+	start := time.Now()
+	command := strings.Join(cmd, " ")
+	if !conf.Config.Silent {
+		fmt.Println()
+		timber.Info(fmt.Sprintf("running command \"%s\"", command))
+	}
+
+	session, err := sshClient.NewSession()
 	if err != nil {
 		return fmt.Errorf("%v failed to create new ssh session", err)
 	}
@@ -39,33 +46,33 @@ func RunCmd(client *ssh.Client, dir string, cmd []string) error {
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
 
-	start := time.Now()
-	command := strings.Join(cmd, " ")
-	if !conf.Config.Silent {
-		fmt.Println()
-		timber.Info(fmt.Sprintf("running command \"%s\"", command))
-	}
 	err = session.Run(fmt.Sprintf("cd %s && %s", dir, command))
 	if err != nil {
 		return fmt.Errorf("%v failed to run %s", err, cmd)
 	}
 	if !conf.Config.Silent {
-		timber.Done(fmt.Sprintf("finished running in %s", time.Since(start)))
+		timber.Done(fmt.Sprintf("finished running in %s", util.FormatDuration(time.Since(start))))
 	}
 	return nil
 }
 
-func RunTar(client *ssh.Client, tempdir, tarpath string, extract bool) error {
-	session, err := client.NewSession()
+func RunTar(sshClient *ssh.Client, remoteTempDir, remoteTarPath string, extract bool) error {
+	session, err := sshClient.NewSession()
 	if err != nil {
 		return fmt.Errorf("%v failed to create new ssh session", err)
 	}
 	defer session.Close()
 
-	command := strings.Join([]string{"tar", "-xzvf", filepath.Base(tarpath)}, " ")
-	out, err := session.CombinedOutput(fmt.Sprintf("cd %s && %s", tempdir, command))
+	var cmd string
+	if extract {
+		cmd = fmt.Sprintf("tar -xzvf %s -C %s", remoteTarPath, remoteTempDir)
+	} else {
+		cmd = fmt.Sprintf("tar -czvf %s --warning=no-file-changed .", remoteTarPath)
+	}
+
+	out, err := session.CombinedOutput(fmt.Sprintf("cd %s && %s", remoteTempDir, cmd))
 	if err != nil {
-		return fmt.Errorf("%v failed to run %s: %s", err, command, string(out))
+		return fmt.Errorf("%v failed to run %s: %s", err, cmd, string(out))
 	}
 	return nil
 }
