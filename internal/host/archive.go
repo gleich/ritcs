@@ -1,4 +1,4 @@
-package local
+package host
 
 import (
 	"archive/tar"
@@ -13,9 +13,10 @@ import (
 
 	"github.com/bmatcuk/doublestar/v4"
 	"pkg.mattglei.ch/ritcs/internal/conf"
+	"pkg.mattglei.ch/timber"
 )
 
-func CreateTarball(conf conf.Config, ignoreStatements []string) (string, error) {
+func CreateTarball(ignoreStatements []string) (string, error) {
 	outPath := filepath.Join(
 		os.TempDir(),
 		"ritcs",
@@ -76,6 +77,10 @@ func CreateTarball(conf conf.Config, ignoreStatements []string) (string, error) 
 		err = tw.WriteHeader(header)
 		if err != nil {
 			return fmt.Errorf("%v failed to write header", err)
+		}
+
+		if !conf.Config.Silent {
+			timber.Done("compressed", relPath)
 		}
 
 		if info.Mode().IsRegular() {

@@ -12,7 +12,7 @@ import (
 )
 
 func Setup() error {
-	config := conf.Config{Port: 22}
+	config := conf.Configuration{Port: 22}
 
 	form := huh.NewForm(
 		huh.NewGroup(

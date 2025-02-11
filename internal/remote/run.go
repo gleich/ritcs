@@ -12,7 +12,7 @@ import (
 	"pkg.mattglei.ch/timber"
 )
 
-func RunCmd(client *ssh.Client, config conf.Config, dir string, cmd []string) error {
+func RunCmd(client *ssh.Client, dir string, cmd []string) error {
 	session, err := client.NewSession()
 	if err != nil {
 		return fmt.Errorf("%v failed to create new ssh session", err)
@@ -40,7 +40,7 @@ func RunCmd(client *ssh.Client, config conf.Config, dir string, cmd []string) er
 
 	start := time.Now()
 	command := strings.Join(cmd, " ")
-	if !config.Silent {
+	if !conf.Config.Silent {
 		fmt.Println()
 		timber.Info(fmt.Sprintf("running command \"%s\"", command))
 	}
@@ -48,7 +48,7 @@ func RunCmd(client *ssh.Client, config conf.Config, dir string, cmd []string) er
 	if err != nil {
 		return fmt.Errorf("%v failed to run %s", err, cmd)
 	}
-	if !config.Silent {
+	if !conf.Config.Silent {
 		timber.Done(fmt.Sprintf("finished running in %s", time.Since(start)))
 	}
 	return nil

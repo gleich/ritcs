@@ -6,56 +6,60 @@ import (
 	"strings"
 
 	"pkg.mattglei.ch/ritcs/internal/conf"
-	"pkg.mattglei.ch/ritcs/internal/local"
+	"pkg.mattglei.ch/ritcs/internal/host"
 	"pkg.mattglei.ch/ritcs/internal/remote"
 	"pkg.mattglei.ch/timber"
 )
 
 func Run(cmd []string) error {
-	config, err := conf.Load()
+	err := conf.Load()
 	if err != nil {
 		timber.Fatal(err, "failed to load configuration file")
 	}
 
-	ignoreStatements, err := conf.ReadIgnore(config)
+	ignoreStatements, err := conf.ReadIgnore()
 	if err != nil {
 		timber.Fatal(err, "failed to read ignore file")
 	}
 
-	sshClient, sftpClient, err := remote.EstablishConnection(config)
+	sshClient, sftpClient, err := remote.EstablishConnection()
 	if err != nil {
 		timber.Fatal(err, "failed to establish connection")
 	}
 	defer sftpClient.Close()
 	defer sshClient.Close()
 
-	tempDir, err := remote.CreateTempDir(config, sftpClient)
+	tempdir, err := remote.CreateTempDir(sftpClient)
 	if err != nil {
 		timber.Fatal(err, "failed to create temporary directory on server")
 	}
 
-	if !config.SkipUpload {
-		zipPath, err := local.CreateTarball(config, ignoreStatements)
+	if !conf.Config.SkipUpload {
+		tarpath, err := host.CreateTarball(ignoreStatements)
 		if err != nil {
 			timber.Fatal(err, "failed to create tarball")
 		}
-		timber.Debug(zipPath)
+
+		err = remote.CopyTarball(sftpClient, tempdir, tarpath)
+		if err != nil {
+			timber.Fatal(err, "failed to copy tarball to remote machine")
+		}
 		os.Exit(0)
 	}
 
-	cmdErr := remote.RunCmd(sshClient, config, tempDir, cmd)
+	cmdErr := remote.RunCmd(sshClient, tempdir, cmd)
 
-	if !config.Silent {
+	if !conf.Config.Silent {
 		fmt.Println()
 	}
-	if !config.SkipDownload {
+	if !conf.Config.SkipDownload {
 		// err = remote.Download(sftpClient, config, tempDir)
 		// if err != nil {
 		// 	timber.Fatal(err, "failed to copy files from remote")
 		// }
 	}
 
-	err = remote.RemoveTempDir(sftpClient, tempDir)
+	err = remote.RemoveTempDir(sftpClient, tempdir)
 	if err != nil {
 		timber.Fatal(err, "failed to remove temporary directory")
 	}

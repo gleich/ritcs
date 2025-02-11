@@ -13,7 +13,7 @@ import (
 
 const IGNORE_FILENAME = ".ritcsignore"
 
-func ReadIgnore(config Config) ([]string, error) {
+func ReadIgnore() ([]string, error) {
 	file, err := os.Open(IGNORE_FILENAME)
 	if errors.Is(err, fs.ErrNotExist) {
 		return []string{}, nil
@@ -41,7 +41,7 @@ func ReadIgnore(config Config) ([]string, error) {
 		}
 	}
 
-	if !config.Silent {
+	if !Config.Silent {
 		timber.Done("loaded", IGNORE_FILENAME)
 	}
 
