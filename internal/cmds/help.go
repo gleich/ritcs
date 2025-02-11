@@ -9,6 +9,8 @@ import (
 
 const help = `ritcs ...
 
+version: v0.1.0
+
 © mattglei.ch {{.Year}} [https://github.com/gleich/ritcs]
 
 commands:
