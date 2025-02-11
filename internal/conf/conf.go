@@ -15,7 +15,6 @@ type Configuration struct {
 	Host         string `toml:"host,required"`
 	KeyPath      string `toml:"key_path,required"`
 	Port         int    `toml:"port"`
-	SkipUpload   bool   `toml:"skip_upload"`
 	SkipDownload bool   `toml:"skip_download"`
 	Silent       bool   `toml:"silent"`
 }

@@ -57,6 +57,5 @@ key_path = "/Users/matt/.ssh/id_ed25519" # path to the ssh key
 # optional
 port = 2021      # ssh port of the cs machine. defaults to 22
 silent = true    # if the program should not output logs. defaults to false
-upload = false   # if files should be uploaded to the cs machine or not. defaults to true
 download = false # if files should be downloaded from the cs machine or not. defaults to true
 ```

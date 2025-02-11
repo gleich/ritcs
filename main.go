@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"pkg.mattglei.ch/ritcs/internal/cmds"
+	"pkg.mattglei.ch/ritcs/internal/conf"
 	"pkg.mattglei.ch/timber"
 )
 
@@ -39,7 +40,18 @@ func main() {
 		return
 	}
 
-	err := cmds.Run(os.Args[1:])
+	err := conf.Load()
+	if err != nil {
+		timber.Fatal(err, "failed to load configuration file")
+	}
+
+	args := os.Args[1:]
+	if os.Args[1] == "--skip-download" {
+		conf.Config.SkipDownload = true
+		args = os.Args[2:]
+	}
+
+	err = cmds.Run(args)
 	if err != nil {
 		timber.Fatal(err, "failed to run command")
 	}

@@ -14,10 +14,6 @@ import (
 )
 
 func Run(cmd []string) error {
-	err := conf.Load()
-	if err != nil {
-		timber.Fatal(err, "failed to load configuration file")
-	}
 
 	ignoreStatements, err := conf.ReadIgnore()
 	if err != nil {
@@ -39,40 +35,28 @@ func Run(cmd []string) error {
 	cleanup := sync.WaitGroup{}
 	cleanup.Add(1)
 	go func() {
-		err := remote.CleanupTempDir(sftpClient, remoteTempDir)
+		err := remote.CleanupTempDir(sftpClient, remoteTempDir, remoteTarPath)
 		if err != nil {
 			timber.Error(err, "failed to cleanup temporary directory")
 		}
 		cleanup.Done()
 	}()
 
-	removeUploadedTar := sync.WaitGroup{}
-	if !conf.Config.SkipUpload {
-		err = remote.UploadCWD(sftpClient, ignoreStatements, remoteTarPath)
-		if err != nil {
-			timber.Fatal(err, "failed to upload current working directory as a tar file")
-		}
-		err = remote.RunTar(sshClient, remoteTempDir, remoteTarPath, true)
-		if err != nil {
-			timber.Fatal(err, "failed to extract tar file")
-		}
-		removeUploadedTar.Add(1)
-		go func() {
-			err := sftpClient.Remove(remoteTarPath)
-			if err != nil {
-				timber.Error(err, "failed to remove tar path", remoteTarPath)
-			}
-			removeUploadedTar.Done()
-		}()
+	err = remote.UploadCWD(sftpClient, ignoreStatements, remoteTarPath)
+	if err != nil {
+		timber.Fatal(err, "failed to upload current working directory as a tar file")
+	}
+	err = remote.RunTar(sshClient, remoteTempDir, remoteTarPath, true)
+	if err != nil {
+		timber.Fatal(err, "failed to extract tar file")
 	}
 
 	cmdErr := remote.RunCmd(sshClient, remoteTempDir, cmd)
-	removeUploadedTar.Wait()
 
-	if !conf.Config.Silent {
-		fmt.Println()
-	}
 	if !conf.Config.SkipDownload {
+		if !conf.Config.Silent {
+			fmt.Println()
+		}
 		err = remote.RunTar(sshClient, remoteTempDir, remoteTarPath, false)
 		if err != nil {
 			timber.Fatal(err, "failed to create tar file on remote")

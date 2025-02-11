@@ -19,7 +19,7 @@ func CreateTempDir(sftpClient *sftp.Client) (string, error) {
 	return dir, nil
 }
 
-func CleanupTempDir(sftpClient *sftp.Client, tempdir string) error {
+func CleanupTempDir(sftpClient *sftp.Client, tempdir string, tarPath string) error {
 	tempDirRoot := filepath.Dir(tempdir)
 	fsObjects, err := sftpClient.ReadDir(tempDirRoot)
 	if err != nil {
@@ -27,7 +27,7 @@ func CleanupTempDir(sftpClient *sftp.Client, tempdir string) error {
 	}
 	for _, obj := range fsObjects {
 		path := filepath.Join(tempDirRoot, obj.Name())
-		if obj.IsDir() && path != tempdir {
+		if (obj.IsDir() && path != tempdir) || (!obj.IsDir() && path != tarPath) {
 			err = sftpClient.RemoveAll(path)
 			if err != nil {
 				return fmt.Errorf("%v failed to remove %s", err, path)
