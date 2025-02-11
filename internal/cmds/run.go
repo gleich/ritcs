@@ -42,13 +42,15 @@ func Run(cmd []string) error {
 		cleanup.Done()
 	}()
 
-	err = remote.UploadCWD(sftpClient, ignoreStatements, remoteTarPath)
+	uploadCount, err := remote.UploadCWD(sftpClient, ignoreStatements, remoteTarPath)
 	if err != nil {
 		timber.Fatal(err, "failed to upload current working directory as a tar file")
 	}
-	err = remote.RunTar(sshClient, remoteTempDir, remoteTarPath, true)
-	if err != nil {
-		timber.Fatal(err, "failed to extract tar file")
+	if uploadCount != 0 {
+		err = remote.RunTar(sshClient, remoteTempDir, remoteTarPath, true)
+		if err != nil {
+			timber.Fatal(err, "failed to extract tar file")
+		}
 	}
 
 	cmdErr := remote.RunCmd(sshClient, remoteTempDir, cmd)

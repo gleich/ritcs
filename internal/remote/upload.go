@@ -21,8 +21,21 @@ func UploadCWD(
 	sftpClient *sftp.Client,
 	ignoreStatements []string,
 	remoteTarPath string,
-) error {
+) (int, error) {
 	start := time.Now()
+	cwd, err := os.Getwd()
+	if err != nil {
+		return 0, fmt.Errorf("%v failed to get working directory", err)
+	}
+
+	dirContent, err := os.ReadDir(cwd)
+	if err != nil {
+		return 0, fmt.Errorf("%v failed to read %s", err, cwd)
+	}
+	if len(dirContent) == 0 {
+		return 0, nil
+	}
+
 	if !conf.Config.Silent {
 		fmt.Println()
 		timber.Info("uploading files")
@@ -30,7 +43,7 @@ func UploadCWD(
 
 	remoteFile, err := sftpClient.Create(remoteTarPath)
 	if err != nil {
-		return fmt.Errorf("%v failed to create remote file at %s", err, remoteTarPath)
+		return 0, fmt.Errorf("%v failed to create remote file at %s", err, remoteTarPath)
 	}
 	defer remoteFile.Close()
 
@@ -40,11 +53,6 @@ func UploadCWD(
 	)
 	defer gw.Close()
 	defer tw.Close()
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("%v failed to get working directory", err)
-	}
 
 	filesUploaded := 0
 	err = filepath.Walk(cwd, func(path string, info fs.FileInfo, err error) error {
@@ -107,10 +115,10 @@ func UploadCWD(
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("%v failed to walk directory %s", err, cwd)
+		return 0, fmt.Errorf("%v failed to walk directory %s", err, cwd)
 	}
 	if !conf.Config.Silent {
 		timber.Done("uploaded", filesUploaded, "files in", util.FormatDuration(time.Since(start)))
 	}
-	return nil
+	return filesUploaded, nil
 }
