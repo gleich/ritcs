@@ -8,12 +8,13 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-type Config struct {
+var Config Configuration
+
+type Configuration struct {
 	Home         string `toml:"home,required"`
 	Host         string `toml:"host,required"`
 	KeyPath      string `toml:"key_path,required"`
 	Port         int    `toml:"port"`
-	SkipUpload   bool   `toml:"skip_upload"`
 	SkipDownload bool   `toml:"skip_download"`
 	Silent       bool   `toml:"silent"`
 }
@@ -26,17 +27,22 @@ func Path() (string, error) {
 	return filepath.Join(home, ".config", "ritcs", "config.toml"), nil
 }
 
-func Load() (Config, error) {
+func Load() error {
 	path, err := Path()
 	if err != nil {
-		return Config{}, fmt.Errorf("%v failed to get configuration path", err)
+		return fmt.Errorf("%v failed to get configuration path", err)
 	}
 
-	var conf Config
+	var conf Configuration
 	_, err = toml.DecodeFile(path, &conf)
 	if err != nil {
-		return Config{}, fmt.Errorf("%v failed to decode TOML config file from %s", err, path)
+		return fmt.Errorf(
+			"%v failed to decode TOML config file from %s",
+			err,
+			path,
+		)
 	}
 
-	return conf, nil
+	Config = conf
+	return nil
 }

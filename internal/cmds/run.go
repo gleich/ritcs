@@ -2,7 +2,11 @@ package cmds
 
 import (
 	"fmt"
+	"math/rand"
+	"path/filepath"
+	"strconv"
 	"strings"
+	"sync"
 
 	"pkg.mattglei.ch/ritcs/internal/conf"
 	"pkg.mattglei.ch/ritcs/internal/remote"
@@ -10,55 +14,73 @@ import (
 )
 
 func Run(cmd []string) error {
-	config, err := conf.Load()
-	if err != nil {
-		timber.Fatal(err, "failed to load configuration file")
-	}
 
-	ignoreStatements, err := conf.ReadIgnore(config)
+	ignoreStatements, err := conf.ReadIgnore()
 	if err != nil {
 		timber.Fatal(err, "failed to read ignore file")
 	}
 
-	sshClient, sftpClient, err := remote.EstablishConnection(config)
+	sshClient, sftpClient, err := remote.EstablishConnection()
 	if err != nil {
 		timber.Fatal(err, "failed to establish connection")
 	}
-	defer sftpClient.Close()
-	defer sshClient.Close()
 
-	tempDir, err := remote.CreateTempDir(config, sftpClient)
+	remoteTempDir, err := remote.CreateTempDir(sftpClient)
 	if err != nil {
 		timber.Fatal(err, "failed to create temporary directory on server")
 	}
+	tarFilename := fmt.Sprintf("%s.tar.gz", strconv.Itoa(rand.Int()))
+	remoteTarPath := filepath.Join(filepath.Dir(remoteTempDir), tarFilename)
 
-	if !config.SkipUpload {
-		err = remote.Upload(sftpClient, config, ignoreStatements, tempDir)
+	cleanup := sync.WaitGroup{}
+	cleanup.Add(1)
+	go func() {
+		err := remote.CleanupTempDir(sftpClient, remoteTempDir, remoteTarPath)
 		if err != nil {
-			timber.Fatal(err, "failed to copy files from host")
+			timber.Error(err, "failed to cleanup temporary directory")
 		}
-	}
+		cleanup.Done()
+	}()
 
-	cmdErr := remote.RunCmd(sshClient, config, tempDir, cmd)
-
-	if !config.Silent {
-		fmt.Println()
-	}
-	if !config.SkipDownload {
-		err = remote.Download(sftpClient, config, tempDir)
-		if err != nil {
-			timber.Fatal(err, "failed to copy files from remote")
-		}
-	}
-
-	err = remote.RemoveTempDir(sftpClient, tempDir)
+	err = remote.UploadCWD(sftpClient, ignoreStatements, remoteTarPath)
 	if err != nil {
-		timber.Fatal(err, "failed to remove temporary directory")
+		timber.Fatal(err, "failed to upload current working directory as a tar file")
+	}
+	err = remote.RunTar(sshClient, remoteTempDir, remoteTarPath, true)
+	if err != nil {
+		timber.Fatal(err, "failed to extract tar file")
+	}
+
+	cmdErr := remote.RunCmd(sshClient, remoteTempDir, cmd)
+
+	if !conf.Config.SkipDownload {
+		if !conf.Config.Silent {
+			fmt.Println()
+		}
+		err = remote.RunTar(sshClient, remoteTempDir, remoteTarPath, false)
+		if err != nil {
+			timber.Fatal(err, "failed to create tar file on remote")
+		}
+		err = remote.DownloadFromTarball(sftpClient, remoteTarPath)
+		if err != nil {
+			return fmt.Errorf("%v failed to extract remote tar file", err)
+		}
+	}
+
+	cleanup.Wait()
+	err = sftpClient.Close()
+	if err != nil {
+		timber.Fatal(err, "failed to close sftp connection")
+	}
+	err = sshClient.Close()
+	if err != nil {
+		timber.Fatal(err, "failed to close ssh connection")
 	}
 
 	if cmdErr != nil {
 		fmt.Println()
-		timber.Fatal(cmdErr, strings.Join(cmd, " "), "excited with a fail exit code")
+		timber.Fatal(cmdErr, strings.Join(cmd, " "), "excited with a fatal exit code")
 	}
+
 	return nil
 }
