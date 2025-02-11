@@ -8,10 +8,11 @@ import (
 
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/term"
+	"pkg.mattglei.ch/ritcs/internal/conf"
 	"pkg.mattglei.ch/timber"
 )
 
-func RunCmd(client *ssh.Client, dir string, cmd []string) error {
+func RunCmd(client *ssh.Client, config conf.Config, dir string, cmd []string) error {
 	session, err := client.NewSession()
 	if err != nil {
 		return fmt.Errorf("%v failed to create new ssh session", err)
@@ -39,12 +40,16 @@ func RunCmd(client *ssh.Client, dir string, cmd []string) error {
 
 	start := time.Now()
 	command := strings.Join(cmd, " ")
-	fmt.Println()
-	timber.Info(fmt.Sprintf("running command \"%s\"", command))
+	if !config.Silent {
+		fmt.Println()
+		timber.Info(fmt.Sprintf("running command \"%s\"", command))
+	}
 	err = session.Run(fmt.Sprintf("cd %s && %s", dir, command))
 	if err != nil {
 		return fmt.Errorf("%v failed to run %s", err, cmd)
 	}
-	timber.Done(fmt.Sprintf("finished running in %s", time.Since(start)))
+	if !config.Silent {
+		timber.Done(fmt.Sprintf("finished running in %s", time.Since(start)))
+	}
 	return nil
 }

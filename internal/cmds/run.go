@@ -39,7 +39,7 @@ func Run(cmd []string) error {
 		}
 	}
 
-	cmdErr := remote.RunCmd(sshClient, tempDir, cmd)
+	cmdErr := remote.RunCmd(sshClient, config, tempDir, cmd)
 
 	if !config.Silent {
 		fmt.Println()
