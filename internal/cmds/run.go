@@ -2,9 +2,7 @@ package cmds
 
 import (
 	"fmt"
-	"math/rand"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -16,7 +14,6 @@ import (
 )
 
 func Run(cmd []string) error {
-
 	ignoreStatements, err := conf.ReadIgnore()
 	if err != nil {
 		timber.Fatal(err, "failed to read ignore file")
@@ -31,7 +28,7 @@ func Run(cmd []string) error {
 	if err != nil {
 		timber.Fatal(err, "failed to create temporary directory on server")
 	}
-	tarFilename := fmt.Sprintf("%s.tar.gz", strconv.Itoa(rand.Int()))
+	tarFilename := fmt.Sprintf("%s.tar.gz", filepath.Base(remoteTempDir))
 	remoteTarPath := filepath.Join(filepath.Dir(remoteTempDir), tarFilename)
 
 	cleanup := sync.WaitGroup{}
