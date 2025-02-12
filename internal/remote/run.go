@@ -13,7 +13,7 @@ import (
 	"pkg.mattglei.ch/timber"
 )
 
-func RunCmd(sshClient *ssh.Client, dir string, cmd []string) error {
+func Exec(sshClient *ssh.Client, dir string, cmd []string) error {
 	start := time.Now()
 	command := strings.Join(cmd, " ")
 	if !conf.Config.Silent {
@@ -56,7 +56,7 @@ func RunCmd(sshClient *ssh.Client, dir string, cmd []string) error {
 	return nil
 }
 
-func RunTar(sshClient *ssh.Client, remoteTempDir, remoteTarPath string, extract bool) error {
+func ExecTar(sshClient *ssh.Client, remoteTempDir, remoteTarPath string, extract bool) error {
 	session, err := sshClient.NewSession()
 	if err != nil {
 		return fmt.Errorf("%v failed to create new ssh session", err)

@@ -12,24 +12,18 @@ import (
 )
 
 func main() {
+	if os.Args[1] == "-h" || os.Args[1] == "--help" {
+		cmds.OutputHelp()
+		return
+	}
+
 	timber.SetTimezone(time.Local)
 	timber.SetTimeFormat("03:04:05")
 
 	if len(os.Args) < 2 {
-		err := cmds.OutputHelp()
-		if err != nil {
-			timber.Fatal(err, "failed to output help")
-		}
+		cmds.OutputHelp()
 		fmt.Println()
 		timber.FatalMsg("please provide command to run")
-	}
-
-	if os.Args[1] == "-h" || os.Args[1] == "--help" {
-		err := cmds.OutputHelp()
-		if err != nil {
-			timber.Fatal(err, "failed to output help")
-		}
-		return
 	}
 
 	if strings.ToLower(strings.Trim(os.Args[1], " ")) == "setup" {

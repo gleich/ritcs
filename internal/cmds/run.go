@@ -47,7 +47,7 @@ func Run(cmd []string) error {
 		timber.Fatal(err, "failed to upload current working directory as a tar file")
 	}
 	if uploadCount != 0 {
-		err = remote.RunTar(sshClient, remoteTempDir, remoteTarPath, true)
+		err = remote.ExecTar(sshClient, remoteTempDir, remoteTarPath, true)
 		if err != nil {
 			timber.Fatal(err, "failed to extract tar file")
 		}
@@ -56,7 +56,7 @@ func Run(cmd []string) error {
 		}
 	}
 
-	cmdErr := remote.RunCmd(sshClient, remoteTempDir, cmd)
+	cmdErr := remote.Exec(sshClient, remoteTempDir, cmd)
 
 	if !conf.Config.SkipDownload {
 		start = time.Now()
@@ -64,18 +64,18 @@ func Run(cmd []string) error {
 			fmt.Println()
 			timber.Info("downloading files")
 		}
-		err = remote.RunTar(sshClient, remoteTempDir, remoteTarPath, false)
+		err = remote.ExecTar(sshClient, remoteTempDir, remoteTarPath, false)
 		if err != nil {
 			timber.Fatal(err, "failed to create tar file on remote")
 		}
-		downloadedFiles, err := remote.DownloadFromTarball(sftpClient, remoteTarPath)
+		downloadCount, err := remote.DownloadFromTarball(sftpClient, remoteTarPath)
 		if err != nil {
 			return fmt.Errorf("%v failed to extract remote tar file", err)
 		}
 		if !conf.Config.Silent {
 			timber.Done(
 				"downloaded",
-				downloadedFiles,
+				downloadCount,
 				"files in",
 				util.FormatDuration(time.Since(start)),
 			)
