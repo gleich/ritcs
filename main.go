@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"pkg.mattglei.ch/ritcs/internal/cmds"
-	"pkg.mattglei.ch/ritcs/internal/conf"
-	"pkg.mattglei.ch/timber"
+	"go.mattglei.ch/ritcs/internal/cmds"
+	"go.mattglei.ch/ritcs/internal/conf"
+	"go.mattglei.ch/timber"
 )
 
 func main() {

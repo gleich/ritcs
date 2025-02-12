@@ -11,8 +11,8 @@ import (
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/pkg/sftp"
-	"pkg.mattglei.ch/ritcs/internal/conf"
-	"pkg.mattglei.ch/timber"
+	"go.mattglei.ch/ritcs/internal/conf"
+	"go.mattglei.ch/timber"
 )
 
 func UploadCWD(

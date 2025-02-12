@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"pkg.mattglei.ch/ritcs/internal/conf"
-	"pkg.mattglei.ch/ritcs/internal/remote"
-	"pkg.mattglei.ch/ritcs/internal/util"
-	"pkg.mattglei.ch/timber"
+	"go.mattglei.ch/ritcs/internal/conf"
+	"go.mattglei.ch/ritcs/internal/remote"
+	"go.mattglei.ch/ritcs/internal/util"
+	"go.mattglei.ch/timber"
 )
 
 func Run(cmd []string) error {

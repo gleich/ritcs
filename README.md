@@ -3,7 +3,7 @@
 [![build](https://github.com/gleich/ritcs/actions/workflows/build.yml/badge.svg)](https://github.com/gleich/ritcs/actions/workflows/build.yml)
 [![release](https://github.com/gleich/ritcs/actions/workflows/release.yml/badge.svg)](https://github.com/gleich/ritcs/actions/workflows/release.yml)
 [![lint](https://github.com/gleich/ritcs/actions/workflows/lint.yml/badge.svg)](https://github.com/gleich/ritcs/actions/workflows/lint.yml)
-[![report card](https://goreportcard.com/badge/pkg.mattglei.ch/ritcs)](https://goreportcard.com/report/pkg.mattglei.ch/ritcs)
+[![report card](https://goreportcard.com/badge/go.mattglei.ch/ritcs)](https://goreportcard.com/report/go.mattglei.ch/ritcs)
 
 Quickly run terminal commands on [RIT](https://www.rit.edu/) CS machines.
 
@@ -14,7 +14,7 @@ Quickly run terminal commands on [RIT](https://www.rit.edu/) CS machines.
 You can either install directly using go:
 
 ```bash
-go install pkg.mattglei.ch/ritcs@latest
+go install go.mattglei.ch/ritcs@latest
 ```
 
 or using homebrew for macOS:

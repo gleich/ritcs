@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/sftp"
+	"go.mattglei.ch/ritcs/internal/conf"
+	"go.mattglei.ch/timber"
 	"golang.org/x/crypto/ssh"
-	"pkg.mattglei.ch/ritcs/internal/conf"
-	"pkg.mattglei.ch/timber"
 )
 
 func EstablishConnection() (*ssh.Client, *sftp.Client, error) {

@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/pkg/sftp"
-	"pkg.mattglei.ch/ritcs/internal/conf"
+	"go.mattglei.ch/ritcs/internal/conf"
 )
 
 func CreateTempDir(sftpClient *sftp.Client) (string, error) {

@@ -7,8 +7,8 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/charmbracelet/huh"
-	"pkg.mattglei.ch/ritcs/internal/conf"
-	"pkg.mattglei.ch/timber"
+	"go.mattglei.ch/ritcs/internal/conf"
+	"go.mattglei.ch/timber"
 )
 
 func Setup() error {

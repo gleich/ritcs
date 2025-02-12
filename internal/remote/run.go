@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
+	"go.mattglei.ch/ritcs/internal/conf"
+	"go.mattglei.ch/ritcs/internal/util"
+	"go.mattglei.ch/timber"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/term"
-	"pkg.mattglei.ch/ritcs/internal/conf"
-	"pkg.mattglei.ch/ritcs/internal/util"
-	"pkg.mattglei.ch/timber"
 )
 
 func Exec(sshClient *ssh.Client, dir string, cmd []string) error {

@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"pkg.mattglei.ch/timber"
+	"go.mattglei.ch/timber"
 )
 
 const IGNORE_FILENAME = ".ritcsignore"
