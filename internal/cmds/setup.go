@@ -1,8 +1,10 @@
 package cmds
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/charmbracelet/huh"
@@ -12,6 +14,11 @@ import (
 )
 
 func Setup() {
+	err := checkRsyncInstall()
+	if err != nil {
+		timber.Fatal(err, "failed to check if rsync is installed")
+	}
+
 	config := conf.Configuration{Port: 22}
 
 	form := huh.NewForm(
@@ -24,7 +31,13 @@ func Setup() {
 				Title("host").
 				Description("Hostname of the CS machine you want to ssh into").
 				Placeholder("glados.cs.rit.edu").
-				Value(&config.Host),
+				Value(&config.Host).
+				Validate(func(s string) error {
+					if !strings.HasSuffix(s, "cs.rit.edu") {
+						return errors.New("host must end with cs.rit.edu")
+					}
+					return nil
+				}),
 			huh.NewInput().
 				Title("key_path").
 				Description("Local path to the private key used to authenticate with the CS machine.").
@@ -40,7 +53,7 @@ func Setup() {
 		),
 	).WithTheme(huh.ThemeBase())
 
-	err := form.Run()
+	err = form.Run()
 	if err != nil {
 		timber.Fatal(err, "failed to ask user for configuration")
 	}
