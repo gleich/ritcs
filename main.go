@@ -48,8 +48,5 @@ func main() {
 		args = os.Args[2:]
 	}
 
-	err = cmds.Run(args)
-	if err != nil {
-		timber.Fatal(err, "failed to run command")
-	}
+	cmds.Run(args)
 }

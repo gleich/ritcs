@@ -14,23 +14,33 @@ import (
 	"golang.org/x/term"
 )
 
-func Exec(sshClient *ssh.Client, dir string, cmd []string) error {
+func Exec(session *ssh.Session, dir string, cmd []string) error {
+	defer session.Close()
 	start := time.Now()
 	command := strings.Join(cmd, " ")
 	if !conf.Config.Silent {
 		fmt.Println()
 		timber.Info(fmt.Sprintf("running command \"%s\"", command))
 	}
+	err := session.Run(fmt.Sprintf("cd %s && %s", dir, command))
+	if err != nil {
+		return fmt.Errorf("%v failed to run %s", err, cmd)
+	}
+	if !conf.Config.Silent {
+		timber.Done(fmt.Sprintf("finished running in %s", util.FormatDuration(time.Since(start))))
+	}
+	return nil
+}
 
+func CreateSession(sshClient *ssh.Client) (*ssh.Session, error) {
 	session, err := sshClient.NewSession()
 	if err != nil {
-		return fmt.Errorf("%v failed to create new ssh session", err)
+		return nil, fmt.Errorf("%v failed to create new ssh session", err)
 	}
-	defer session.Close()
 
 	width, height, err := term.GetSize(0)
 	if err != nil {
-		return fmt.Errorf("%v failed to get terminal size", err)
+		return nil, fmt.Errorf("%v failed to get terminal size", err)
 	}
 
 	modes := ssh.TerminalModes{
@@ -40,21 +50,14 @@ func Exec(sshClient *ssh.Client, dir string, cmd []string) error {
 	}
 	err = session.RequestPty("xterm-256color", height, width, modes)
 	if err != nil {
-		return fmt.Errorf("%v request for pseudo terminal failed", err)
+		return nil, fmt.Errorf("%v request for pseudo terminal failed", err)
 	}
 
 	session.Stdin = os.Stdin
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
 
-	err = session.Run(fmt.Sprintf("cd %s && %s", dir, command))
-	if err != nil {
-		return fmt.Errorf("%v failed to run %s", err, cmd)
-	}
-	if !conf.Config.Silent {
-		timber.Done(fmt.Sprintf("finished running in %s", util.FormatDuration(time.Since(start))))
-	}
-	return nil
+	return session, nil
 }
 
 type rsyncOperation int

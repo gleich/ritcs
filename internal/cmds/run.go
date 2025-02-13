@@ -5,68 +5,76 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sync"
 	"time"
 
 	"github.com/briandowns/spinner"
 	"go.mattglei.ch/ritcs/internal/conf"
 	"go.mattglei.ch/ritcs/internal/remote"
+	"go.mattglei.ch/ritcs/internal/util"
 	"go.mattglei.ch/timber"
+	"golang.org/x/crypto/ssh"
 )
 
-func Run(cmd []string) error {
+func Run(cmd []string) {
 	err := checkRsyncInstall()
 	if err != nil {
-		return fmt.Errorf("%v failed to check to see if rsync is installed", err)
+		timber.Fatal(err, "failed to check for rsync installation")
 	}
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		return fmt.Errorf("%v failed to get working directory", err)
+		timber.Fatal(err, "failed to get working directory")
 	}
 	projectPath := remote.ProjectPath(cwd)
 
-	sshClient, err := remote.EstablishConnection()
-	if err != nil {
-		return fmt.Errorf("%v failed to establish connection to remote machine", err)
-	}
-	defer sshClient.Close()
+	var (
+		sshClient  *ssh.Client
+		sshSession *ssh.Session
+	)
+	sshConnection := sync.WaitGroup{}
+	sshConnection.Add(1)
+	go func() {
+		sshClient, err = remote.EstablishConnection()
+		if err != nil {
+			timber.Fatal(err, "failed to connect to remote host machine")
+		}
+		sshSession, err = remote.CreateSession(sshClient)
+		if err != nil {
+			timber.Fatal(err, "failed to create ssh session")
+		}
+		sshConnection.Done()
+	}()
 
-	frames := []string{
-		"[    ]", // 0%
-		"[=   ]", // 6.25%
-		"[==  ]", // 12.5%
-		"[=== ]", // 18.75%
-		"[ ===]", // 25%
-		"[  ==]", // 31.25%
-		"[   =]", // 37.5%
-		"[    ]", // 43.75%
-		"[   =]", // 50%
-		"[  ==]", // 56.25%
-		"[ ===]", // 62.5%
-		"[====]", // 68.75%
-		"[=== ]", // 75%
-		"[==  ]", // 81.25%
-		"[=   ]", // 87.5%
-		"[    ]", // 93.75% / 100%
-	}
-	s := spinner.New(frames, 20*time.Millisecond)
+	s := spinner.New(util.CustomSpinner, 10*time.Millisecond)
 	s.Suffix = fmt.Sprintf(" uploading files to %s", conf.Config.Host)
 	if !conf.Config.Silent {
 		s.Start()
 	}
 	err = remote.RunRsync(projectPath, remote.Upload)
 	if err != nil {
-		return fmt.Errorf("%v failed to run rsync", err)
+		timber.Fatal(err, "failed to run rsync")
 	}
 	if !conf.Config.Silent {
 		s.Stop()
 		timber.Done("uploaded files to", conf.Config.Host)
 	}
 
-	err = remote.Exec(sshClient, projectPath, cmd)
+	sshConnection.Wait()
+	err = remote.Exec(sshSession, projectPath, cmd)
 	if err != nil {
-		return fmt.Errorf("%v failed to run command", err)
+		timber.Fatal(err, "failed to execute command")
 	}
+
+	closeSSH := sync.WaitGroup{}
+	closeSSH.Add(1)
+	go func() {
+		err := sshClient.Close()
+		if err != nil {
+			timber.Fatal(err, "failed to close ssh connection")
+		}
+		closeSSH.Done()
+	}()
 
 	if !conf.Config.SkipDownload {
 		if !conf.Config.Silent {
@@ -76,7 +84,7 @@ func Run(cmd []string) error {
 		}
 		err = remote.RunRsync(projectPath, remote.Download)
 		if err != nil {
-			return fmt.Errorf("%v failed to download files using rsync", err)
+			timber.Fatal(err, "failed to download files using rsync")
 		}
 		if !conf.Config.Silent {
 			s.Stop()
@@ -84,7 +92,7 @@ func Run(cmd []string) error {
 		}
 	}
 
-	return nil
+	closeSSH.Wait()
 }
 
 func checkRsyncInstall() error {
