@@ -27,10 +27,7 @@ func main() {
 	}
 
 	if strings.ToLower(strings.Trim(os.Args[1], " ")) == "setup" {
-		err := cmds.Setup()
-		if err != nil {
-			timber.Fatal(err, "failed to setup user")
-		}
+		cmds.Setup()
 		return
 	}
 
@@ -48,9 +45,10 @@ func main() {
 		args = os.Args[2:]
 	}
 
-	if args[0] == "uninstall" {
+	if strings.ToLower(strings.Trim(args[0], " ")) == "uninstall" {
 		cmds.Uninstall()
-	} else {
-		cmds.Run(args)
+		return
 	}
+
+	cmds.Run(args)
 }

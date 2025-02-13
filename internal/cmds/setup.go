@@ -1,17 +1,17 @@
 package cmds
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 	"github.com/charmbracelet/huh"
 	"go.mattglei.ch/ritcs/internal/conf"
+	"go.mattglei.ch/ritcs/internal/remote"
 	"go.mattglei.ch/timber"
 )
 
-func Setup() error {
+func Setup() {
 	config := conf.Configuration{Port: 22}
 
 	form := huh.NewForm(
@@ -42,29 +42,36 @@ func Setup() error {
 
 	err := form.Run()
 	if err != nil {
-		return fmt.Errorf("%v failed to ask user for configuration", err)
+		timber.Fatal(err, "failed to ask user for configuration")
 	}
+
+	conf.Config = config
+	sshClient, err := remote.EstablishConnection()
+	if err != nil {
+		timber.FatalMsg("connection test failed:", err.Error())
+	}
+	defer sshClient.Close()
+	timber.Done("connection test PASSED")
 
 	b, err := toml.Marshal(config)
 	if err != nil {
-		return fmt.Errorf("%v failed to marshal config into toml", err)
+		timber.Fatal(err, "failed to marshal config into toml")
 	}
 
 	path, err := conf.Path()
 	if err != nil {
-		return fmt.Errorf("%v failed to get configuration path", err)
+		timber.Fatal(err, "failed to get configuration path")
 	}
 
 	err = os.MkdirAll(filepath.Dir(path), 0755)
 	if err != nil {
-		return fmt.Errorf("%v failed to create folder", err)
+		timber.Fatal(err, "failed to create folder")
 	}
 
 	err = os.WriteFile(path, b, 0644)
 	if err != nil {
-		return fmt.Errorf("%v failed to write configuration to file", err)
+		timber.Fatal(err, "failed to write configuration to file")
 	}
 
 	timber.Done("created configuration at", path)
-	return nil
 }

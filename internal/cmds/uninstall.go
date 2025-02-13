@@ -1,7 +1,9 @@
 package cmds
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -26,7 +28,7 @@ func Uninstall() {
 
 	timber.Info("removing .ritcs directory from", conf.Config.Host)
 	err = sftpClient.RemoveAll(remote.RemoteRITCSDirectory())
-	if err != nil {
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		timber.Fatal(err, "failed to remove remote .ritcs directory")
 	}
 	timber.Done("removed .ritcs directory from", conf.Config.Host)

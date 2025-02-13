@@ -1,11 +1,14 @@
 package conf
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
+	"go.mattglei.ch/timber"
 )
 
 var Config Configuration
@@ -32,6 +35,11 @@ func Load() error {
 	path, err := Path()
 	if err != nil {
 		return fmt.Errorf("%v failed to get configuration path", err)
+	}
+
+	_, err = os.Stat(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		timber.FatalMsg("no configuration file found. please run 'ritcs setup'")
 	}
 
 	var conf Configuration
