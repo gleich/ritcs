@@ -1,13 +1,13 @@
 module go.mattglei.ch/ritcs
 
-go 1.23.6
+go 1.24
 
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/bmatcuk/doublestar/v4 v4.8.1
 	github.com/charmbracelet/huh v0.6.0
 	github.com/pkg/sftp v1.13.7
-	go.mattglei.ch/timber v1.1.1
+	go.mattglei.ch/timber v1.1.2
 	golang.org/x/crypto v0.33.0
 	golang.org/x/term v0.29.0
 )
@@ -17,10 +17,10 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
 	github.com/charmbracelet/bubbles v0.20.0 // indirect
-	github.com/charmbracelet/bubbletea v1.3.0 // indirect
+	github.com/charmbracelet/bubbletea v1.3.3 // indirect
 	github.com/charmbracelet/lipgloss v1.0.0 // indirect
 	github.com/charmbracelet/x/ansi v0.8.0 // indirect
-	github.com/charmbracelet/x/exp/strings v0.0.0-20250209221203-add6d453fbb2 // indirect
+	github.com/charmbracelet/x/exp/strings v0.0.0-20250213125511-a0c32e22e4fc // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
