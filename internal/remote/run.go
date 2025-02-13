@@ -3,6 +3,7 @@ package remote
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -53,5 +54,50 @@ func Exec(sshClient *ssh.Client, dir string, cmd []string) error {
 	if !conf.Config.Silent {
 		timber.Done(fmt.Sprintf("finished running in %s", util.FormatDuration(time.Since(start))))
 	}
+	return nil
+}
+
+type rsyncOperation int
+
+const (
+	Download rsyncOperation = iota
+	Upload   rsyncOperation = iota
+)
+
+func RunRsync(projectPath string, op rsyncOperation) error {
+	var (
+		args           []string
+		remoteLocation = fmt.Sprintf("%s@%s:%s/", conf.Config.User, conf.Config.Host, projectPath)
+	)
+
+	switch op {
+	case Upload:
+		args = []string{
+			"-ahrzW",
+			"--perms",
+			"--rsync-path", fmt.Sprintf("mkdir -p %s && rsync", projectPath), // create parent directory
+			"--omit-dir-times",
+			"--exclude=.git",
+			"--exclude=.DS_Store",
+			"./",
+			remoteLocation,
+			"--delete",
+		}
+	case Download:
+		args = []string{
+			"-ahrzW",
+			"--omit-dir-times",
+			"--perms",
+			remoteLocation,
+			".",
+		}
+	}
+
+	cmd := exec.Command("rsync", args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%v failed to run rsync\n%s", err, string(out))
+	}
+
 	return nil
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/briandowns/spinner"
 	"go.mattglei.ch/ritcs/internal/conf"
 	"go.mattglei.ch/ritcs/internal/remote"
-	"go.mattglei.ch/ritcs/internal/util"
 	"go.mattglei.ch/timber"
 )
 
@@ -26,11 +25,10 @@ func Run(cmd []string) error {
 	}
 	projectPath := remote.ProjectPath(cwd)
 
-	sshClient, sftpClient, err := remote.EstablishConnection()
+	sshClient, err := remote.EstablishConnection()
 	if err != nil {
 		return fmt.Errorf("%v failed to establish connection to remote machine", err)
 	}
-	defer sftpClient.Close()
 	defer sshClient.Close()
 
 	frames := []string{
@@ -51,21 +49,19 @@ func Run(cmd []string) error {
 		"[=   ]", // 87.5%
 		"[    ]", // 93.75% / 100%
 	}
-	start := time.Now()
 	s := spinner.New(frames, 20*time.Millisecond)
 	s.Suffix = fmt.Sprintf(" uploading files to %s", conf.Config.Host)
-	fmt.Println()
-	s.Start()
-	err = sftpClient.MkdirAll(projectPath)
-	if err != nil {
-		return fmt.Errorf("%v failed to create project path %s", err, projectPath)
+	if !conf.Config.Silent {
+		s.Start()
 	}
 	err = remote.RunRsync(projectPath, remote.Upload)
 	if err != nil {
 		return fmt.Errorf("%v failed to run rsync", err)
 	}
-	s.Stop()
-	timber.Done("uploaded files to", conf.Config.Host, "in", util.FormatDuration(time.Since(start)))
+	if !conf.Config.Silent {
+		s.Stop()
+		timber.Done("uploaded files to", conf.Config.Host)
+	}
 
 	err = remote.Exec(sshClient, projectPath, cmd)
 	if err != nil {
@@ -73,22 +69,19 @@ func Run(cmd []string) error {
 	}
 
 	if !conf.Config.SkipDownload {
-		fmt.Println()
-		start = time.Now()
-		s.Suffix = fmt.Sprintf(" downloading files from %s", conf.Config.Host)
-		s.Start()
+		if !conf.Config.Silent {
+			fmt.Println()
+			s.Suffix = fmt.Sprintf(" downloading files from %s", conf.Config.Host)
+			s.Start()
+		}
 		err = remote.RunRsync(projectPath, remote.Download)
 		if err != nil {
 			return fmt.Errorf("%v failed to download files using rsync", err)
 		}
-		s.Stop()
-		timber.Done(
-			"downloaded files from",
-			conf.Config.Host,
-			"in",
-			util.FormatDuration(time.Since(start)),
-		)
-
+		if !conf.Config.Silent {
+			s.Stop()
+			timber.Done("downloaded files from", conf.Config.Host)
+		}
 	}
 
 	return nil

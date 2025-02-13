@@ -5,21 +5,19 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/pkg/sftp"
 	"go.mattglei.ch/ritcs/internal/conf"
-	"go.mattglei.ch/timber"
 	"golang.org/x/crypto/ssh"
 )
 
-func EstablishConnection() (*ssh.Client, *sftp.Client, error) {
+func EstablishConnection() (*ssh.Client, error) {
 	key, err := os.ReadFile(conf.Config.KeyPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("%v failed to read from key path %s", err, conf.Config.KeyPath)
+		return nil, fmt.Errorf("%v failed to read from key path %s", err, conf.Config.KeyPath)
 	}
 
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		return nil, nil, fmt.Errorf("%v failed to parse private key", err)
+		return nil, fmt.Errorf("%v failed to parse private key", err)
 	}
 
 	config := &ssh.ClientConfig{
@@ -34,19 +32,8 @@ func EstablishConnection() (*ssh.Client, *sftp.Client, error) {
 		config,
 	)
 	if err != nil {
-		return nil, nil, fmt.Errorf("%v failed to create connection", err)
-	}
-	if !conf.Config.Silent {
-		timber.Done("established SSH connection to", conf.Config.Host)
+		return nil, fmt.Errorf("%v failed to create connection", err)
 	}
 
-	sftpClient, err := sftp.NewClient(sshClient)
-	if err != nil {
-		return nil, nil, fmt.Errorf("%v failed to create sftp client", err)
-	}
-	if !conf.Config.Silent {
-		timber.Done("established SFTP connection to", conf.Config.Host)
-	}
-
-	return sshClient, sftpClient, nil
+	return sshClient, nil
 }

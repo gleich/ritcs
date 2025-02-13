@@ -6,7 +6,6 @@ require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/briandowns/spinner v1.23.2
 	github.com/charmbracelet/huh v0.6.0
-	github.com/pkg/sftp v1.13.7
 	go.mattglei.ch/timber v1.1.2
 	golang.org/x/crypto v0.33.0
 	golang.org/x/term v0.29.0
@@ -25,7 +24,6 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/fatih/color v1.18.0 // indirect
-	github.com/kr/fs v0.1.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
