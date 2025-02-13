@@ -12,6 +12,7 @@ var Config Configuration
 
 type Configuration struct {
 	Home         string `toml:"home,required"`
+	User         string `toml:"user"`
 	Host         string `toml:"host,required"`
 	KeyPath      string `toml:"key_path,required"`
 	Port         int    `toml:"port"`
@@ -42,6 +43,8 @@ func Load() error {
 			path,
 		)
 	}
+
+	conf.User = filepath.Base(conf.Home)
 
 	Config = conf
 	return nil

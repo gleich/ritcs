@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/BurntSushi/toml v1.4.0
-	github.com/bmatcuk/doublestar/v4 v4.8.1
+	github.com/briandowns/spinner v1.23.2
 	github.com/charmbracelet/huh v0.6.0
 	github.com/pkg/sftp v1.13.7
 	go.mattglei.ch/timber v1.1.2
@@ -24,8 +24,10 @@ require (
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
+	github.com/fatih/color v1.18.0 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect

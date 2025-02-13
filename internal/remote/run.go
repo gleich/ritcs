@@ -55,24 +55,3 @@ func Exec(sshClient *ssh.Client, dir string, cmd []string) error {
 	}
 	return nil
 }
-
-func ExecTar(sshClient *ssh.Client, remoteTempDir, remoteTarPath string, extract bool) error {
-	session, err := sshClient.NewSession()
-	if err != nil {
-		return fmt.Errorf("%v failed to create new ssh session", err)
-	}
-	defer session.Close()
-
-	var cmd string
-	if extract {
-		cmd = fmt.Sprintf("tar -xzvf %s -C %s", remoteTarPath, remoteTempDir)
-	} else {
-		cmd = fmt.Sprintf("tar -czvf %s --warning=no-file-changed .", remoteTarPath)
-	}
-
-	out, err := session.CombinedOutput(fmt.Sprintf("cd %s && %s", remoteTempDir, cmd))
-	if err != nil {
-		return fmt.Errorf("%v failed to run %s: %s", err, cmd, string(out))
-	}
-	return nil
-}
