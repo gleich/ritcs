@@ -63,7 +63,7 @@ func Run(cmd []string) {
 	sshConnection.Wait()
 	err = remote.Exec(sshSession, projectPath, cmd)
 	if err != nil {
-		timber.Fatal(err, "failed to execute command")
+		timber.FatalMsg("failed to execute command")
 	}
 
 	closeSSH := sync.WaitGroup{}

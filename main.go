@@ -48,5 +48,9 @@ func main() {
 		args = os.Args[2:]
 	}
 
-	cmds.Run(args)
+	if args[0] == "uninstall" {
+		cmds.Uninstall()
+	} else {
+		cmds.Run(args)
+	}
 }
