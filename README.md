@@ -29,11 +29,11 @@ or using homebrew:
 brew install gleich/homebrew-tap/ritcs
 ```
 
-## Prerequisite
+## Prerequisites
 
 ### SSH Key
 
-Before using `ritcs` you need to have created a ssh key and have it copied over to the cs machine you want to ssh into. This can be done using the following terminal commands:
+Before using `ritcs` you need to have created an ssh key and have it copied over to the cs machine you want to ssh into. This can be done using the following terminal commands:
 
 ```bash
 ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
@@ -74,7 +74,7 @@ download = false # if files should be downloaded from the cs machine or not. def
 
 ## Uninstall
 
-Tried out `ritcs` and found it wasn't for you? Simply run following command to remove the local configuration and to remove the remote directories created on the CS machine. You can then uninstall the `ritcs` binary and it was if it was never on your system.
+Tried out `ritcs` and found it wasn't for you? Simply run following command to remove the local configuration and to remove the remote directories created on the CS machine. You can then uninstall the `ritcs` binary and it is as if it was never on your system.
 
 ```bash
 ritcs uninstall

@@ -29,7 +29,7 @@ func Setup() {
 				Value(&config.Home),
 			huh.NewInput().
 				Title("host").
-				Description("Hostname of the CS machine you want to ssh into").
+				Description("Hostname of the CS machine you want to ssh into.").
 				Placeholder("glados.cs.rit.edu").
 				Value(&config.Host).
 				Validate(func(s string) error {
