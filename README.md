@@ -72,6 +72,19 @@ silent = true    # if the program should not output logs. defaults to false
 download = false # if files should be downloaded from the cs machine or not. defaults to true
 ```
 
+### Flags
+
+You can also specify a configuration flag when running `ritcs` like so:
+
+```bash
+ritcs --silent make
+```
+
+This will make the program not output logs. One thing to note is that **only one flag is supported at a time**. This is due to the limitations of how `ritcs` parses arguments. Other supported flags are:
+
+- `-h` or `--help` to output all commands that `ritcs` has to offer
+- `--skip-download` to only upload the files and run the command
+
 ## Uninstall
 
 Tried out `ritcs` and found it wasn't for you? Simply run following command to remove the local configuration and to remove the remote directories created on the CS machine. You can then uninstall the `ritcs` binary and it is as if it was never on your system.
