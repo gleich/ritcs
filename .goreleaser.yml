@@ -24,7 +24,7 @@ brews:
       name: homebrew-tap
     directory: Formula
     homepage: 'https://github.com/gleich/ritcs'
-    description: 'Quickly run terminal commands on the RIT CS machines'
+    description: 'Seamlessly run commands on RIT CS machines with automatic upload, execution, and sync of your local directory.'
     commit_author:
       name: gleich
       email: git@mattglei.ch

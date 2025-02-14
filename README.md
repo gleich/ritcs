@@ -5,7 +5,7 @@
 [![lint](https://github.com/gleich/ritcs/actions/workflows/lint.yml/badge.svg)](https://github.com/gleich/ritcs/actions/workflows/lint.yml)
 [![report card](https://goreportcard.com/badge/go.mattglei.ch/ritcs)](https://goreportcard.com/report/go.mattglei.ch/ritcs)
 
-Quickly run terminal commands on [RIT](https://www.rit.edu/) CS machines and sync everything back to your local machine.
+Seamlessly run commands on RIT CS machines with automatic upload, execution, and sync of your local directory.
 
 ## Demo
 
@@ -15,7 +15,7 @@ Quickly run terminal commands on [RIT](https://www.rit.edu/) CS machines and syn
 
 <!-- prettier-ignore -->
 > [!NOTE]
-> `ritcs` has been tested on macOS only. It should work perfectly fine with linux but might not work in windows. Please report an [GitHub issue](https://github.com/gleich/ritcs/issues/new) if you encounter an issue with `ritcs` on your system.
+> `ritcs` has been tested on macOS only. It should work perfectly fine on linux but might not work in windows. Please report a [GitHub issue](https://github.com/gleich/ritcs/issues/new) if you encounter an issue with `ritcs` on your system.
 
 You can either install directly using go:
 
@@ -58,7 +58,7 @@ This then creates a configuration file in `~/.config/ritcs/config.toml`.
 
 ### Configuration
 
-Here is an example configuration file:
+Here is an example configuration file that is found in `~/.config/ritcs/config.toml`:
 
 ```toml
 # required
@@ -74,13 +74,13 @@ download = false # if files should be downloaded from the cs machine or not. def
 
 ### Flags
 
-You can also specify a configuration flag when running `ritcs` like so:
+You can also specify configuration flags when running `ritcs` like so:
 
 ```bash
 ritcs --silent make
 ```
 
-This will make the program not output logs. One thing to note is that **only one flag is supported at a time**. This is due to the limitations of how `ritcs` parses arguments. Other supported flags are:
+This flag will make `ritcs` not output logs, only the output of the command. Other supported flags are:
 
 - `-h` or `--help` to output all commands that `ritcs` has to offer
 - `--skip-download` to only upload the files and run the command
