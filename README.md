@@ -9,6 +9,8 @@ Quickly run terminal commands on [RIT](https://www.rit.edu/) CS machines and syn
 
 ## Demo
 
+[Checkout the demo video on YouTube](https://www.youtube.com/watch?v=7pARO7L9hYk)
+
 ## Install
 
 <!-- prettier-ignore -->
