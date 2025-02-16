@@ -7,7 +7,7 @@ require (
 	github.com/briandowns/spinner v1.23.2
 	github.com/charmbracelet/huh v0.6.0
 	github.com/pkg/sftp v1.13.7
-	go.mattglei.ch/timber v1.1.2
+	go.mattglei.ch/timber v1.2.0
 	golang.org/x/crypto v0.33.0
 	golang.org/x/term v0.29.0
 )
