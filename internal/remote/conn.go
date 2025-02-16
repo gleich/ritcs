@@ -12,12 +12,12 @@ import (
 func EstablishConnection() (*ssh.Client, error) {
 	key, err := os.ReadFile(conf.Config.KeyPath)
 	if err != nil {
-		return nil, fmt.Errorf("%v failed to read from key path %s", err, conf.Config.KeyPath)
+		return nil, fmt.Errorf("%w failed to read from key path %s", err, conf.Config.KeyPath)
 	}
 
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		return nil, fmt.Errorf("%v failed to parse private key", err)
+		return nil, fmt.Errorf("%w failed to parse private key", err)
 	}
 
 	config := &ssh.ClientConfig{
@@ -32,7 +32,7 @@ func EstablishConnection() (*ssh.Client, error) {
 		config,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("%v failed to create connection", err)
+		return nil, fmt.Errorf("%w failed to create connection", err)
 	}
 
 	return sshClient, nil

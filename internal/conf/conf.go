@@ -26,7 +26,7 @@ type Configuration struct {
 func Path() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "", fmt.Errorf("%v failed to get user's home directory", err)
+		return "", fmt.Errorf("%w failed to get user's home directory", err)
 	}
 	return filepath.Join(home, ".config", "ritcs", "config.toml"), nil
 }
@@ -34,7 +34,7 @@ func Path() (string, error) {
 func Load() error {
 	path, err := Path()
 	if err != nil {
-		return fmt.Errorf("%v failed to get configuration path", err)
+		return fmt.Errorf("%w failed to get configuration path", err)
 	}
 
 	_, err = os.Stat(path)

@@ -24,7 +24,7 @@ func Exec(session *ssh.Session, dir string, cmd []string) error {
 	}
 	err := session.Run(fmt.Sprintf("cd %s && %s", dir, command))
 	if err != nil {
-		return fmt.Errorf("%v failed to run %s", err, cmd)
+		return fmt.Errorf("%w failed to run %s", err, cmd)
 	}
 	if !conf.Config.Silent {
 		timber.Done(fmt.Sprintf("finished running in %s", util.FormatDuration(time.Since(start))))
@@ -35,12 +35,12 @@ func Exec(session *ssh.Session, dir string, cmd []string) error {
 func CreateSession(sshClient *ssh.Client) (*ssh.Session, error) {
 	session, err := sshClient.NewSession()
 	if err != nil {
-		return nil, fmt.Errorf("%v failed to create new ssh session", err)
+		return nil, fmt.Errorf("%w failed to create new ssh session", err)
 	}
 
 	width, height, err := term.GetSize(0)
 	if err != nil {
-		return nil, fmt.Errorf("%v failed to get terminal size", err)
+		return nil, fmt.Errorf("%w failed to get terminal size", err)
 	}
 
 	modes := ssh.TerminalModes{
@@ -50,7 +50,7 @@ func CreateSession(sshClient *ssh.Client) (*ssh.Session, error) {
 	}
 	err = session.RequestPty("xterm-256color", height, width, modes)
 	if err != nil {
-		return nil, fmt.Errorf("%v request for pseudo terminal failed", err)
+		return nil, fmt.Errorf("%w request for pseudo terminal failed", err)
 	}
 
 	session.Stdin = os.Stdin
@@ -99,7 +99,7 @@ func RunRsync(projectPath string, op rsyncOperation) error {
 	cmd := exec.Command("rsync", args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("%v failed to run rsync\n%s", err, string(out))
+		return fmt.Errorf("%w failed to run rsync\n%s", err, string(out))
 	}
 
 	return nil

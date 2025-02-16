@@ -101,7 +101,7 @@ func checkRsyncInstall() error {
 		timber.FatalMsg("rsync binary not found. please install rsync as it is required by ritcs")
 	}
 	if err != nil {
-		return fmt.Errorf("%v failed to check to see if rsync is installed", err)
+		return fmt.Errorf("%w failed to check to see if rsync is installed", err)
 	}
 	return nil
 }
