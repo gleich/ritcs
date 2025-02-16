@@ -8,7 +8,7 @@ import (
 func OutputHelp() {
 	fmt.Printf(`ritcs [flags] <command> [arguments...]
 
-version: v1.0.0
+version: v1.0.1
 
 © mattglei.ch %d [https://github.com/gleich/ritcs]
 
